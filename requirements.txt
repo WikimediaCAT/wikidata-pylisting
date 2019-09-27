@@ -1,0 +1,6 @@
+# Needed packages
+
+mwclient==0.10.0
+wikidata==0.6.1
+SPARQLWrapper==1.8.4
+pandas==0.25.1
