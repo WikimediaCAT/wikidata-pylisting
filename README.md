@@ -5,9 +5,15 @@ Scripts per a recuperar dades de Wikidata i combinar-les amb altres API
 
 ## pyenv
 
+Install [pyenv](https://github.com/pyenv/pyenv) and a Python version if necessary:
+
+    pyenv install 3.7.4
+
+Install [virtualenv](https://github.com/pyenv/pyenv-virtualenv) plugin and then enable the virtual environment:
+
     pyenv virtualenv 3.7.4 pylisting
     pyenv shell pylisting
-    pip install -r requirements
+    pip install -r requirements.txt
 
 ## Llistat d'últimes entrades de dones
 
