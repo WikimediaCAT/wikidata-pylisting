@@ -30,3 +30,7 @@ SPARQL
 A continuació resultats per darrera creació. Màx. 50 títols per consulta
 
 https://ca.wikipedia.org/w/api.php?action=query&prop=revisions&rvlimit=1&rvprop=timestamp&rvdir=newer&titles=A._Brun
+
+Query:
+
+    curl -X GET https://query.wikidata.org/sparql?query=(SPARQL) -H "Accept: text/tab-separated-values"
