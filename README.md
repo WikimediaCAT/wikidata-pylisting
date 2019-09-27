@@ -1,6 +1,14 @@
 # wikidata-pylisting
 Scripts per a recuperar dades de Wikidata i combinar-les amb altres API
 
+# Instal·lació i ús
+
+## pyenv
+
+    pyenv virtualenv 3.7.4 pylisting
+    pyenv shell pylisting
+    pip install -r requirements
+
 ## Llistat d'últimes entrades de dones
 
 SPARQL
