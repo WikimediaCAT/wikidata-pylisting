@@ -1,3 +1,9 @@
+import requests
+import pandas as pd
+import io
+
+# Import JSON configuration
+
 query = """
 SELECT ?item ?itemLabel 
 WHERE 
@@ -7,13 +13,9 @@ WHERE
 } limit 10
 """
 
-
-import requests
-import pandas as pd
-import io
-
 headers = {
-    'Accept': 'text/tab-separated-values',
+	'Accept': 'text/tab-separated-values',
+	'User-Agent': 'darreresBio/0.1.0 (https://github.com/WikimediaCAT/wikidata-pylisting; toniher@wikimedia.cat) Python/3.7',
 }
 params = { 'query':  query }
 response = requests.get('https://query.wikidata.org/sparql', headers=headers, params=params)
