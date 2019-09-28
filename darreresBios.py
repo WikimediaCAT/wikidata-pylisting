@@ -66,13 +66,16 @@ c['item'] = c['item'].apply( lambda x: x.replace("http://www.wikidata.org/entity
 
 creation_date = np.zeros( ( len(c) ), dtype='datetime64' )
 
-for g, df in c.groupby(np.arange(len(c)) // 50):
-		titles = df['article'].str.cat(sep="|")
+for index, row in c.iterrows():
+		titles = row['article']
 		result = site.api('query', prop='revisions', rvprop='timestamp|user', rvdir='newer', rvlimit=1, titles=titles )
 		for page in result['query']['pages'].values():
 				if 'revisions' in page:
-						print( '{}'.format(page['title'].encode('utf8') ) )
-						pp.pprint( page['revisions'] )
+						if len( page['revisions'] ) > 0  :
+								timestamp = page['revisions'][0]['timestamp']
+								userrev = page['revisions'][0]['user']
+								print( timestamp )
+								print( userrev )
 		exit()
 
 print( c )
