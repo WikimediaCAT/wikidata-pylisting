@@ -51,6 +51,19 @@ if user and pwd :
 conn = sqlite3.connect( dbfile )
 cur = conn.cursor()
 
+def insertInDB( new_stored, conn ):
+		
+		c = conn.cursor()
+		
+		for index, row in new_stored.iterrows():
+
+				c.executemany( "INSERT INTO `bios` VALUES (?, ?, ?)", row.values )
+		
+		
+		conn.commit()
+		
+		return True
+
 cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255) NOT NULL PRIMARY KEY, `cdate` datetime NULL, `cuser` VARCHAR(255) NULL  ) ;")
 
 query = """
@@ -105,6 +118,8 @@ print( new_stored )
 
 # Send to SQLite
 # INSERT or REPLACE sqlite new_stored -> Need specific function here
+insertInDB( new_stored, conn )
+conn.close()
 
 # Repeat stored
 stored2 = pd.read_sql_query("SELECT * from `bios`", conn )
@@ -113,6 +128,6 @@ stored2 = pd.read_sql_query("SELECT * from `bios`", conn )
 current2 = pd.merge( c, stored2, how='left', on='article' )
 
 # Here we list, order and have fun
-
+print( current2 )
 
 
