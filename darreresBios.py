@@ -57,7 +57,7 @@ def insertInDB( new_stored, conn ):
 		
 		for index, row in new_stored.iterrows():
 
-				c.executemany( "INSERT INTO `bios` VALUES (?, ?, ?)", row.values )
+				c.execute( "INSERT INTO `bios`(`article`, `cdate`, `cuser`) VALUES (?, ?, ?)", [ row['article'], row['cdate'], row['cuser'] ] )
 		
 		
 		conn.commit()
@@ -73,7 +73,7 @@ SELECT ?item ?itemLabel ?article WHERE {
   ?article schema:about ?item .
   ?article schema:isPartOf <https://ca.wikipedia.org/> .
   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],ca" } .
-} ORDER BY ?article limit 5
+} ORDER BY ?article
 """
 
 headers = {
@@ -97,8 +97,6 @@ current = pd.merge( c, stored, how='left', on='article' )
 # Iterate only entries with null user or timestamp
 missing = current[(current['cuser'].isnull()) & (current['cdate'].isnull())]
 
-print( missing )
-
 new_stored = pd.DataFrame( columns = [ 'article', 'cdate', 'cuser' ] )
 
 for index, row in missing.iterrows():
@@ -119,7 +117,6 @@ print( new_stored )
 # Send to SQLite
 # INSERT or REPLACE sqlite new_stored -> Need specific function here
 insertInDB( new_stored, conn )
-conn.close()
 
 # Repeat stored
 stored2 = pd.read_sql_query("SELECT * from `bios`", conn )
@@ -128,6 +125,6 @@ stored2 = pd.read_sql_query("SELECT * from `bios`", conn )
 current2 = pd.merge( c, stored2, how='left', on='article' )
 
 # Here we list, order and have fun
-print( current2 )
+print( current2.sort_values(by='cdate', ascending=False ) )
 
-
+conn.close()
