@@ -8,6 +8,7 @@ import pprint
 import json
 import mwclient
 import sqlite3
+import time
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -50,7 +51,7 @@ if user and pwd :
 conn = sqlite3.connect( dbfile )
 cur = conn.cursor()
 
-cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255) NOT NULL PRIM, `cdate` datetime NULL, `cuser` VARCHAR(255) NULL  ) ;")
+cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255) NOT NULL PRIMARY KEY, `cdate` datetime NULL, `cuser` VARCHAR(255) NULL  ) ;")
 
 query = """
 SELECT ?item ?itemLabel ?article WHERE {
@@ -59,7 +60,7 @@ SELECT ?item ?itemLabel ?article WHERE {
   ?article schema:about ?item .
   ?article schema:isPartOf <https://ca.wikipedia.org/> .
   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],ca" } .
-} ORDER BY ?article limit 500
+} ORDER BY ?article limit 5
 """
 
 headers = {
@@ -75,13 +76,17 @@ c['article'] = c['article'].apply(lambda x: unquote( x.replace("https://ca.wikip
 c['item'] = c['item'].apply( lambda x: x.replace("http://www.wikidata.org/entity/", "") )
 
 # Get stored info
-stored = pd.read_sql_query("SELECT * from `bios`", con )
+stored = pd.read_sql_query("SELECT * from `bios`", conn )
 
 # Merge both subsets centered in actual data
 current = pd.merge( c, stored, how='left', on='article' )
 
 # Iterate only entries with null user or timestamp
-missing = current[(current[cuser].isnull()) & (current[cdate].isnull())]
+missing = current[(current['cuser'].isnull()) & (current['cdate'].isnull())]
+
+print( missing )
+
+new_stored = pd.DataFrame( columns = [ 'article', 'cdate', 'cuser' ] )
 
 for index, row in missing.iterrows():
 		titles = row['article']
@@ -89,11 +94,25 @@ for index, row in missing.iterrows():
 		for page in result['query']['pages'].values():
 				if 'revisions' in page:
 						if len( page['revisions'] ) > 0  :
+
 								timestamp = page['revisions'][0]['timestamp']
 								userrev = page['revisions'][0]['user']
-								print( timestamp )
-								print( userrev )
-		exit()
 
-print( c )
+								new_stored = new_stored.append( { 'article': titles, 'cdate': timestamp, 'cuser': userrev  }, ignore_index=True )
+								time.sleep( 0.1 )
+
+print( new_stored )
+
+# Send to SQLite
+# INSERT or REPLACE sqlite new_stored -> Need specific function here
+
+# Repeat stored
+stored2 = pd.read_sql_query("SELECT * from `bios`", conn )
+
+# Merge both subsets centered in actual data
+current2 = pd.merge( c, stored2, how='left', on='article' )
+
+# Here we list, order and have fun
+
+
 
