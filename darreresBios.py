@@ -3,8 +3,43 @@ import pandas as pd
 import numpy as np
 import io
 from urllib.parse import unquote
+import argparse
+import pprint
+import json
+import mwclient
+
+pp = pprint.PrettyPrinter(indent=4)
 
 # Import JSON configuration
+parser = argparse.ArgumentParser(description="""Script for testing MediaWiki API""")
+parser.add_argument("-config",help="""Path to a JSON file with configuration options!""")
+args = parser.parse_args()
+
+
+host = "ca.wikipedia.org"
+user = None
+password = None
+protocol = "https"
+data = {} 
+
+if "config" in args:
+		with open(args.config) as json_data_file:
+				data = json.load(json_data_file)
+
+if "mw" in data:
+		if "host" in data["mw"]:
+				host = data["mw"]["host"]
+		if "user" in data["mw"]:
+				user = data["mw"]["user"]
+		if "password" in data["mw"]:
+				pwd = data["mw"]["password"]
+		if "protocol" in data["mw"]:
+				protocol = data["mw"]["protocol"]
+
+site = mwclient.Site((protocol, host))
+if user and pwd :
+		# Login parameters
+		site.login(user, pwd)
 
 query = """
 SELECT ?item ?itemLabel ?article WHERE {
@@ -31,8 +66,13 @@ c['item'] = c['item'].apply( lambda x: x.replace("http://www.wikidata.org/entity
 creation_date = np.zeros( ( len(c) ), dtype='datetime64' )
 
 for g, df in c.groupby(np.arange(len(c)) // 50):
-	titles = df['article'].str.cat(sep="|")
-
+		titles = df['article'].str.cat(sep="|")
+		result = site.api('query', prop='pageviews', titles=titles )
+		for page in result['query']['pages'].values():
+				if 'pageviews' in page:
+						print( '{}'.format(page['title'].encode('utf8') ) )
+						pp.pprint( page['pageviews'] )
+		exit
 
 print( c )
 
