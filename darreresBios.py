@@ -7,6 +7,7 @@ import argparse
 import pprint
 import json
 import mwclient
+import sqlite3
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -20,7 +21,8 @@ host = "ca.wikipedia.org"
 user = None
 password = None
 protocol = "https"
-data = {} 
+data = {}
+dbfile = "mydb.db"
 
 if "config" in args:
 		if args.config is not None:
@@ -37,10 +39,18 @@ if "mw" in data:
 		if "protocol" in data["mw"]:
 				protocol = data["mw"]["protocol"]
 
-site = mwclient.Site((protocol, host))
+if "dbfile" in data:
+		dbfile = data["dbfile"]
+
+site = mwclient.Site(host, scheme=protocol)
 if user and pwd :
 		# Login parameters
 		site.login(user, pwd)
+
+conn = sqlite3.connect( dbfile )
+cur = conn.cursor()
+
+cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255) NOT NULL PRIM, `cdate` datetime NULL, `cuser` VARCHAR(255) NULL  ) ;")
 
 query = """
 SELECT ?item ?itemLabel ?article WHERE {
@@ -49,7 +59,7 @@ SELECT ?item ?itemLabel ?article WHERE {
   ?article schema:about ?item .
   ?article schema:isPartOf <https://ca.wikipedia.org/> .
   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],ca" } .
-} ORDER BY ?article
+} ORDER BY ?article limit 500
 """
 
 headers = {
@@ -64,9 +74,16 @@ c=pd.read_csv(io.StringIO(response.content.decode('utf-8')))
 c['article'] = c['article'].apply(lambda x: unquote( x.replace("https://ca.wikipedia.org/wiki/", "") ) )
 c['item'] = c['item'].apply( lambda x: x.replace("http://www.wikidata.org/entity/", "") )
 
-creation_date = np.zeros( ( len(c) ), dtype='datetime64' )
+# Get stored info
+stored = pd.read_sql_query("SELECT * from `bios`", con )
 
-for index, row in c.iterrows():
+# Merge both subsets centered in actual data
+current = pd.merge( c, stored, how='left', on='article' )
+
+# Iterate only entries with null user or timestamp
+missing = current[(current[cuser].isnull()) & (current[cdate].isnull())]
+
+for index, row in missing.iterrows():
 		titles = row['article']
 		result = site.api('query', prop='revisions', rvprop='timestamp|user', rvdir='newer', rvlimit=1, titles=titles )
 		for page in result['query']['pages'].values():
