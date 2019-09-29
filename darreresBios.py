@@ -24,6 +24,7 @@ password = None
 protocol = "https"
 data = {}
 dbfile = "mydb.db"
+targetpage = "User:Toniher/proves"
 
 if "config" in args:
 		if args.config is not None:
@@ -42,6 +43,9 @@ if "mw" in data:
 
 if "dbfile" in data:
 		dbfile = data["dbfile"]
+		
+if "targetpage" in data:
+		targetpage = data["targetpage"]
 
 site = mwclient.Site(host, scheme=protocol)
 if user and pwd :
@@ -62,6 +66,27 @@ def insertInDB( new_stored, conn ):
 		
 		conn.commit()
 		
+		return True
+	
+def printInWiki( toprint, mwclient, targetpage ):
+	
+		text = ""
+		
+		count = toprint.shape[0]
+		i = 0
+		
+		print( count )
+
+		text =+ "{|\n!" + "ordre !! " + toprint.columns.join( " !! " ) + "\n"
+
+		for index, row in toprint.iterrows():
+				num = count - i			
+				text =+ "|-\n|" + num + " || " + item + " || " + " [["+article+"]]" + " || " + cuser + " || " + cdate + "\n"
+				i = i + 1
+			
+		text =+ "|}"
+		
+		print text
 		return True
 
 cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255) NOT NULL PRIMARY KEY, `cdate` datetime NULL, `cuser` VARCHAR(255) NULL  ) ;")
