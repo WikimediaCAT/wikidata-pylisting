@@ -125,6 +125,10 @@ stored2 = pd.read_sql_query("SELECT * from `bios`", conn )
 current2 = pd.merge( c, stored2, how='left', on='article' )
 
 # Here we list, order and have fun
-print( current2.sort_values(by='cdate', ascending=False ) )
+toprint = current2.sort_values(by='cdate', ascending=False )
+print( toprint[(toprint['cuser'].notnull()) ] )
+
+# Moved pages
+print( current2[(current2['cuser'].isnull()) ] )
 
 conn.close()
