@@ -96,7 +96,7 @@ def printToWiki( toprint, mwclient, targetpage, milestone ):
 		if milestone :
 			
 			diff = int( milestone ) - int( count )			
-			sittext = "Som a " + str( diff ) + " articles de la fita de " + str( count ) + " entrades de dones." 
+			sittext = "Som a " + str( diff ) + " articles de la fita de " + str( milestone ) + " entrades de dones." 
 			page = site.pages[ milestonepage ]
 			page.save( sittext, summary='Bios', minor=False, bot=True )
 		
