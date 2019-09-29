@@ -68,25 +68,25 @@ def insertInDB( new_stored, conn ):
 		
 		return True
 	
-def printInWiki( toprint, mwclient, targetpage ):
+def printToWiki( toprint, mwclient, targetpage ):
 	
-		text = ""
-		
 		count = toprint.shape[0]
 		i = 0
 		
 		print( count )
 
-		text =+ "{|\n!" + "ordre !! " + toprint.columns.join( " !! " ) + "\n"
+		text = "{| class='wikitable sortable' \n!" + "ordre !! " + " !! ".join( toprint.columns.values.tolist() ) + "\n"
 
-		for index, row in toprint.iterrows():
+		for index, row in toprint.head(100).iterrows():
 				num = count - i			
-				text =+ "|-\n|" + num + " || " + item + " || " + " [["+article+"]]" + " || " + cuser + " || " + cdate + "\n"
+				text = text + "|-\n|" + str( num ) + " || " + "[[d:" + row['item'] + "|" + row['item'] + "]]" + " || " + row['itemLabel'] + " || " + " [["+row['article']+"]]" + " || " + row['cdate']  + " || " +  "{{u|"+str( row['cuser'] ) + "}}" + "\n"
 				i = i + 1
 			
-		text =+ "|}"
+		text = text + "|}"
 		
-		print text
+		print( text )
+		page = site.pages[ targetpage ]
+		page.save( text, summary='Bios', minor=False, bot=True )
 		return True
 
 cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255) NOT NULL PRIMARY KEY, `cdate` datetime NULL, `cuser` VARCHAR(255) NULL  ) ;")
@@ -151,7 +151,7 @@ current2 = pd.merge( c, stored2, how='left', on='article' )
 
 # Here we list, order and have fun
 toprint = current2.sort_values(by='cdate', ascending=False )
-print( toprint[(toprint['cuser'].notnull()) ] )
+printToWiki( toprint[(toprint['cuser'].notnull()) ], mwclient, targetpage )
 
 # Moved pages
 print( current2[(current2['cuser'].isnull()) ] )
