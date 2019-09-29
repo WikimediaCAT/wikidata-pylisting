@@ -48,8 +48,8 @@ if "dbfile" in data:
 if "targetpage" in data:
 		targetpage = data["targetpage"]
 		
-if "milestone" in data:
-		milestone = data["milestone"]
+if "milestonepage" in data:
+		milestonepage = data["milestonepage"]
 
 site = mwclient.Site(host, scheme=protocol)
 if user and pwd :
@@ -72,7 +72,7 @@ def insertInDB( new_stored, conn ):
 		
 		return True
 	
-def printToWiki( toprint, mwclient, targetpage ):
+def printToWiki( toprint, mwclient, targetpage, milestonepage ):
 	
 		count = toprint.shape[0]
 		i = 0
@@ -161,7 +161,7 @@ current2 = pd.merge( c, stored2, how='left', on='article' )
 
 # Here we list, order and have fun
 toprint = current2.sort_values(by='cdate', ascending=False )
-printToWiki( toprint[(toprint['cuser'].notnull()) ], mwclient, targetpage, milestone )
+printToWiki( toprint[(toprint['cuser'].notnull()) ], mwclient, targetpage, milestonepage )
 
 # Moved pages
 print( current2[(current2['cuser'].isnull()) ] )
