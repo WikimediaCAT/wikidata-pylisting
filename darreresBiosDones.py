@@ -25,7 +25,6 @@ protocol = "https"
 data = {}
 dbfile = "mydb.db"
 targetpage = "User:Toniher/proves"
-milestone = None
 milestonepage = "Plantilla:FitaDones"
 
 if "config" in args:
@@ -73,7 +72,7 @@ def insertInDB( new_stored, conn ):
 		
 		return True
 	
-def printToWiki( toprint, mwclient, targetpage, milestone ):
+def printToWiki( toprint, mwclient, targetpage ):
 	
 		count = toprint.shape[0]
 		i = 0
@@ -93,10 +92,8 @@ def printToWiki( toprint, mwclient, targetpage, milestone ):
 		page = site.pages[ targetpage ]
 		page.save( text, summary='Bios', minor=False, bot=True )
 		
-		if milestone :
-			
-			diff = int( milestone ) - int( count )			
-			sittext = "Som a '''" + str( diff ) + "''' articles de la fita de '''" + str( milestone ) + "''' entrades de dones." 
+		if milestonepage :
+			sittext = count 
 			page = site.pages[ milestonepage ]
 			page.save( sittext, summary='Bios', minor=False, bot=True )
 		
