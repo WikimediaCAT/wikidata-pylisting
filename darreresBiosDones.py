@@ -25,6 +25,8 @@ protocol = "https"
 data = {}
 dbfile = "mydb.db"
 targetpage = "User:Toniher/proves"
+milestone = None
+milestonepage = "Plantilla:FitaDones"
 
 if "config" in args:
 		if args.config is not None:
@@ -46,6 +48,9 @@ if "dbfile" in data:
 		
 if "targetpage" in data:
 		targetpage = data["targetpage"]
+		
+if "milestone" in data:
+		milestone = data["milestone"]
 
 site = mwclient.Site(host, scheme=protocol)
 if user and pwd :
@@ -68,7 +73,7 @@ def insertInDB( new_stored, conn ):
 		
 		return True
 	
-def printToWiki( toprint, mwclient, targetpage ):
+def printToWiki( toprint, mwclient, targetpage, milestone ):
 	
 		count = toprint.shape[0]
 		i = 0
@@ -87,6 +92,14 @@ def printToWiki( toprint, mwclient, targetpage ):
 		print( text )
 		page = site.pages[ targetpage ]
 		page.save( text, summary='Bios', minor=False, bot=True )
+		
+		if milestone :
+			
+			diff = int( milestone ) - int( count )			
+			sittext = "Som a " + str( diff ) + " articles de la fita de " + str( count ) + " entrades de dones." 
+			page = site.pages[ milestonepage ]
+			page.save( sittext, summary='Bios', minor=False, bot=True )
+		
 		return True
 
 cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255) NOT NULL PRIMARY KEY, `cdate` datetime NULL, `cuser` VARCHAR(255) NULL  ) ;")
@@ -151,7 +164,7 @@ current2 = pd.merge( c, stored2, how='left', on='article' )
 
 # Here we list, order and have fun
 toprint = current2.sort_values(by='cdate', ascending=False )
-printToWiki( toprint[(toprint['cuser'].notnull()) ], mwclient, targetpage )
+printToWiki( toprint[(toprint['cuser'].notnull()) ], mwclient, targetpage, milestone )
 
 # Moved pages
 print( current2[(current2['cuser'].isnull()) ] )
