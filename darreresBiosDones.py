@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import requests
 import pandas as pd
 import numpy as np
@@ -149,8 +152,7 @@ for index, row in missing.iterrows():
 
 print( new_stored )
 
-# Send to SQLite
-# INSERT or REPLACE sqlite new_stored -> Need specific function here
+# INSERT or REPLACE sqlite new_stored
 insertInDB( new_stored, conn )
 
 # Repeat stored
