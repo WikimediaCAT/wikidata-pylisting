@@ -108,9 +108,12 @@ response = requests.get('https://query.wikidata.org/sparql', headers=headers, pa
 c=pd.read_csv(io.StringIO(response.content.decode('utf-8')))
 
 c['article'] = c['article'].apply(lambda x: unquote( x.replace("https://ca.wikipedia.org/wiki/", "") ) )
+c['genere'] = c['genere'].astype('str')
+c['genere'] = c['genere'].apply( lambda x: x.replace("http://www.wikidata.org/entity/", "") )
 c['item'] = c['item'].apply( lambda x: x.replace("http://www.wikidata.org/entity/", "") )
 
-print( c )
+#print( c[ c['article'].str.startswith( "User" ) ] )
+
 
 # Iterate only entries with null user or timestamp
 # missing = current[(current['cuser'].isnull()) & (current['cdate'].isnull())]
