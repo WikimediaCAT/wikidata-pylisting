@@ -96,7 +96,7 @@ def printToWiki( toprint, mwclient, targetpage, milestonepage ):
 		page.save( text, summary='Bios', minor=False, bot=True )
 		
 		if milestonepage :
-			sittext = count + "\n<noinclude>[[Categoria:Plantilles]]</noinclude>"
+			sittext = str( count ) + "\n<noinclude>[[Categoria:Plantilles]]</noinclude>"
 			page = site.pages[ milestonepage ]
 			page.save( sittext, summary='Bios', minor=False, bot=True )
 		

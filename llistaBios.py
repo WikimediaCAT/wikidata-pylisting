@@ -96,7 +96,7 @@ def printToWiki( toprint, mwclient, targetpage, milestonepage ):
 		page.save( text, summary='Bios', minor=False, bot=True )
 		
 		if milestonepage :
-			sittext = count + "\n<noinclude>[[Categoria:Plantilles]]</noinclude>"
+			sittext = str( count ) + "\n<noinclude>[[Categoria:Plantilles]]</noinclude>"
 			page = site.pages[ milestonepage ]
 			page.save( sittext, summary='Bios', minor=False, bot=True )
 		
@@ -143,13 +143,19 @@ new_stored = pd.DataFrame( columns = [ 'article', 'cdate', 'cuser' ] )
 
 for index, row in missing.iterrows():
 		titles = row['article']
+		print( titles )
 		result = site.api('query', prop='revisions', rvprop='timestamp|user', rvdir='newer', rvlimit=1, titles=titles )
 		for page in result['query']['pages'].values():
 				if 'revisions' in page:
 						if len( page['revisions'] ) > 0  :
 
-								timestamp = page['revisions'][0]['timestamp']
-								userrev = page['revisions'][0]['user']
+								timestamp = None
+								userrev = None
+
+								if 'timestamp' in page['revisions'][0] :
+										timestamp = page['revisions'][0]['timestamp']
+								if 'user' in page['revisions'][0] :
+										userrev = page['revisions'][0]['user']
 
 								new_stored = new_stored.append( { 'article': titles, 'cdate': timestamp, 'cuser': userrev  }, ignore_index=True )
 								time.sleep( 0.25 )
