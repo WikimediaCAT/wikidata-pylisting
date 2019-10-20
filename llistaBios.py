@@ -10,7 +10,6 @@ import argparse
 import pprint
 import json
 import mwclient
-import sqlite3
 import time
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -28,7 +27,7 @@ protocol = "https"
 data = {}
 dbfile = "mydb.db"
 targetpage = "User:Toniher/proves"
-milestonepage = "Plantilla:FitaDones"
+milestonepage = "Plantilla:TotalBios"
 
 if "config" in args:
 		if args.config is not None:
@@ -59,22 +58,7 @@ if user and pwd :
 		# Login parameters
 		site.login(user, pwd)
 
-conn = sqlite3.connect( dbfile )
-cur = conn.cursor()
 
-def insertInDB( new_stored, conn ):
-		
-		c = conn.cursor()
-		
-		for index, row in new_stored.iterrows():
-
-				c.execute( "INSERT INTO `bios`(`article`, `cdate`, `cuser`) VALUES (?, ?, ?)", [ row['article'], row['cdate'], row['cuser'] ] )
-		
-		
-		conn.commit()
-		
-		return True
-	
 def printToWiki( toprint, mwclient, targetpage, milestonepage ):
 	
 		count = toprint.shape[0]
@@ -102,15 +86,15 @@ def printToWiki( toprint, mwclient, targetpage, milestonepage ):
 		
 		return True
 
-cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255) NOT NULL PRIMARY KEY, `cdate` datetime NULL, `cuser` VARCHAR(255) NULL  ) ;")
-
 query = """
-SELECT ?item ?itemLabel ?article WHERE {
+SELECT ?item ?genere ?article WHERE {
   ?item wdt:P31 wd:Q5.
-  ?item wdt:P21 wd:Q6581072 .
   ?article schema:about ?item .
   ?article schema:isPartOf <https://ca.wikipedia.org/> .
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],ca" } .
+  #SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],ca" } .
+  OPTIONAL {
+    ?item wdt:P21 ?genere .
+  }
 } ORDER BY ?article
 """
 
@@ -126,46 +110,28 @@ c=pd.read_csv(io.StringIO(response.content.decode('utf-8')))
 c['article'] = c['article'].apply(lambda x: unquote( x.replace("https://ca.wikipedia.org/wiki/", "") ) )
 c['item'] = c['item'].apply( lambda x: x.replace("http://www.wikidata.org/entity/", "") )
 
-# Get stored info
-stored = pd.read_sql_query("SELECT * from `bios`", conn )
-
-# Merge both subsets centered in actual data
-current = pd.merge( c, stored, how='left', on='article' )
+print( c )
 
 # Iterate only entries with null user or timestamp
-missing = current[(current['cuser'].isnull()) & (current['cdate'].isnull())]
+# missing = current[(current['cuser'].isnull()) & (current['cdate'].isnull())]
+# 
+# new_stored = pd.DataFrame( columns = [ 'article', 'cdate', 'cuser' ] )
+# 
+# print( new_stored )
+# 
+# # INSERT or REPLACE sqlite new_stored
+# insertInDB( new_stored, conn )
+# 
+# # Repeat stored
+# stored2 = pd.read_sql_query("SELECT * from `bios`", conn )
+# 
+# # Merge both subsets centered in actual data
+# current2 = pd.merge( c, stored2, how='left', on='article' )
+# 
+# # Here we list, order and have fun
+# toprint = current2.sort_values(by='cdate', ascending=False )
+# printToWiki( toprint[(toprint['cuser'].notnull()) ], mwclient, targetpage, milestonepage )
+# 
+# # Moved pages
+# print( current2[(current2['cuser'].isnull()) ] )
 
-new_stored = pd.DataFrame( columns = [ 'article', 'cdate', 'cuser' ] )
-
-for index, row in missing.iterrows():
-		titles = row['article']
-		result = site.api('query', prop='revisions', rvprop='timestamp|user', rvdir='newer', rvlimit=1, titles=titles )
-		for page in result['query']['pages'].values():
-				if 'revisions' in page:
-						if len( page['revisions'] ) > 0  :
-
-								timestamp = page['revisions'][0]['timestamp']
-								userrev = page['revisions'][0]['user']
-
-								new_stored = new_stored.append( { 'article': titles, 'cdate': timestamp, 'cuser': userrev  }, ignore_index=True )
-								time.sleep( 0.1 )
-
-print( new_stored )
-
-# INSERT or REPLACE sqlite new_stored
-insertInDB( new_stored, conn )
-
-# Repeat stored
-stored2 = pd.read_sql_query("SELECT * from `bios`", conn )
-
-# Merge both subsets centered in actual data
-current2 = pd.merge( c, stored2, how='left', on='article' )
-
-# Here we list, order and have fun
-toprint = current2.sort_values(by='cdate', ascending=False )
-printToWiki( toprint[(toprint['cuser'].notnull()) ], mwclient, targetpage, milestonepage )
-
-# Moved pages
-print( current2[(current2['cuser'].isnull()) ] )
-
-conn.close()
