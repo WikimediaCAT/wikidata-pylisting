@@ -26,7 +26,7 @@ user = None
 password = None
 protocol = "https"
 data = {}
-dbfile = "mydb.db"
+dbfile = "allbios.db"
 targetpage = "User:Toniher/Bios"
 milestonepage = "Plantilla:TotalBios"
 
