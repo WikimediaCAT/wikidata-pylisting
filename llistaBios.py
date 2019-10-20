@@ -86,7 +86,7 @@ def printToWiki( toprint, mwclient, targetpage, milestonepage ):
 
 		for index, row in toprint.head(100).iterrows():
 				num = count - i			
-				text = text + "|-\n|" + str( num ) + " || " + "[[d:" + row['item'] + "|" + row['item'] + "]]" + " || " + row['itemLabel'] + " || " + " [["+row['article']+"]]" + " || " + row['cdate']  + " || " +  "{{u|"+str( row['cuser'] ) + "}}" + "\n"
+				text = text + "|-\n|" + str( num ) + " || " + "[[d:" + row['item'] + "|" + row['item'] + "]]" + " || " + row['genere'] + " || " + " [["+row['article']+"]]" + " || " + row['cdate']  + " || " +  "{{u|"+str( row['cuser'] ) + "}}" + "\n"
 				i = i + 1
 			
 		text = text + "|}"
