@@ -29,6 +29,7 @@ data = {}
 dbfile = "allbios.db"
 targetpage = "User:Toniher/Bios"
 milestonepage = "Plantilla:TotalBios"
+checkpage = "User:Toniher/CheckBios"
 
 if "config" in args:
 		if args.config is not None:
@@ -53,6 +54,9 @@ if "targetpage" in data:
 		
 if "milestonepage" in data:
 		milestonepage = data["milestonepage"]
+
+if "checkpage" in data:
+		checkpage = data["checkpage"]
 
 site = mwclient.Site(host, scheme=protocol)
 if user and pwd :
@@ -99,6 +103,22 @@ def printToWiki( toprint, mwclient, targetpage, milestonepage ):
 			sittext = str( count ) + "\n<noinclude>[[Categoria:Plantilles]]</noinclude>"
 			page = site.pages[ milestonepage ]
 			page.save( sittext, summary='Bios', minor=False, bot=True )
+		
+		return True
+	
+def printCheckWiki( toprint, mwclient, checkpage ):
+	
+	
+		text = "{| class='wikitable sortable' \n!" + " !! ".join( toprint.columns.values.tolist() ) + "\n"
+
+		for index, row in toprint.iterrows():
+				text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + " || || " +  "\n"
+			
+		text = text + "|}"
+		
+		print( text )
+		page = site.pages[ checkpage ]
+		page.save( text, summary='Bios', minor=False, bot=True )
 		
 		return True
 
@@ -173,10 +193,10 @@ current2 = pd.merge( c, stored2, how='left', on='article' )
 
 # Here we list, order and have fun
 toprint = current2.sort_values(by='cdate', ascending=False )
-printToWiki( toprint[(toprint['cuser'].notnull()) ], mwclient, targetpage, milestonepage )
+printToWiki( toprint[(toprint['cdate'].notnull()) ], mwclient, targetpage, milestonepage )
 
 # Moved pages
-print( current2[(current2['cuser'].isnull()) ] )
+printCheckWiki( current2[(current2['cdate'].isnull()) ], mwclient, checkpage )
 
 conn.close()
 

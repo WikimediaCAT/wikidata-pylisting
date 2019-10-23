@@ -163,9 +163,9 @@ current2 = pd.merge( c, stored2, how='left', on='article' )
 
 # Here we list, order and have fun
 toprint = current2.sort_values(by='cdate', ascending=False )
-printToWiki( toprint[(toprint['cuser'].notnull()) ], mwclient, targetpage, milestonepage )
+printToWiki( toprint[(toprint['cdate'].notnull()) ], mwclient, targetpage, milestonepage )
 
 # Moved pages
-print( current2[(current2['cuser'].isnull()) ] )
+#print( current2[(current2['cuser'].isnull()) ] )
 
 conn.close()
