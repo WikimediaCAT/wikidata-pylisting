@@ -102,7 +102,7 @@ def printToWiki( toprint, mwclient, targetpage, milestonepage ):
 		
 		return True
 
-cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255) NOT NULL PRIMARY KEY, `cdate` datetime NULL, `cuser` VARCHAR(255) NULL  ) ;")
+cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255), `cdate` datetime, `cuser` VARCHAR(255) ) ;")
 
 query = """
 SELECT ?item ?genere ?article WHERE {
@@ -158,7 +158,7 @@ for index, row in missing.iterrows():
 										userrev = page['revisions'][0]['user']
 
 								new_stored = new_stored.append( { 'article': titles, 'cdate': timestamp, 'cuser': userrev  }, ignore_index=True )
-								time.sleep( 0.25 )
+								time.sleep( 0.1 )
 
 print( new_stored )
 
