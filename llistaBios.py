@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import io
 from urllib.parse import unquote
-from urllib.request import request
+from urllib import request
 import argparse
 import pprint
 import json
@@ -80,9 +80,9 @@ def checkWikiDataJSON( item ) :
 		##parcing json
 		entitycont = cont['entities'][item]
 		
-		iw  = "" 
+		iw  = [] 
 		if 'sitelinks' in entitycont :
-			iw = ", ".join( list( entitycont['sitelinks'] ) )
+			iw = list( entitycont['sitelinks'] )
 
 		time.sleep( 0.2 )
 		return iw
@@ -131,11 +131,12 @@ def printToWiki( toprint, mwclient, targetpage, milestonepage ):
 def printCheckWiki( toprint, mwclient, checkpage ):
 	
 	
-		text = "{| class='wikitable sortable' \n!" + " !! ".join( toprint.columns.values.tolist() ) + "!! iwiki\n"
+		text = "{| class='wikitable sortable' \n!" + " !! ".join( toprint.columns.values.tolist() ) + "!! iwiki !! iwikicount\n"
 
 		for index, row in toprint.iterrows():
 			iwiki = checkWikiDataJSON( str( row['item'] ) )
-			text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + " || || || " + iwiki + "\n"
+			iwikicount = len( iwiki )
+			text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + " || || || " + ", ".join( iwiki ) + "|| " + str( iwikicount ) + "\n"
 			
 		text = text + "|}"
 		
