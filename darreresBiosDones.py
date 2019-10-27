@@ -90,7 +90,7 @@ def printToWiki( toprint, mwclient, targetpage, milestonepage ):
 				i = i + 1
 			
 		text = text + "|}"
-		
+		text = text + "\n" + "[[Categoria:Viquiprojecte Viquidones]]"	
 		print( text )
 		page = site.pages[ targetpage ]
 		page.save( text, summary='Bios', minor=False, bot=True )
