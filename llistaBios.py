@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import io
 from urllib.parse import unquote
+from urllib.request import request
 import argparse
 import pprint
 import json
@@ -66,13 +67,34 @@ if user and pwd :
 conn = sqlite3.connect( dbfile )
 cur = conn.cursor()
 
+def checkWikiDataJSON( item ) :
+		
+		url = "https://www.wikidata.org/wiki/Special:EntityData/" + item + ".json"
+		
+		req = request.Request(url)
+				
+		##parsing response
+		r = request.urlopen(req).read()
+		cont = json.loads(r.decode('utf-8'))
+		
+		##parcing json
+		entitycont = cont['entities'][item]
+		
+		iw  = "" 
+		if 'sitelinks' in entitycont :
+			iw = ", ".join( list( entitycont['sitelinks'] ) )
+
+		time.sleep( 0.2 )
+		return iw
+	
+
 def insertInDB( new_stored, conn ):
 		
 		c = conn.cursor()
 		
 		for index, row in new_stored.iterrows():
 
-				c.execute( "INSERT INTO `bios`(`article`, `cdate`, `cuser`) VALUES (?, ?, ?)", [ row['article'], row['cdate'], row['cuser'] ] )
+			c.execute( "INSERT INTO `bios`(`article`, `cdate`, `cuser`) VALUES (?, ?, ?)", [ row['article'], row['cdate'], row['cuser'] ] )
 		
 		
 		conn.commit()
@@ -89,9 +111,9 @@ def printToWiki( toprint, mwclient, targetpage, milestonepage ):
 		text = "{| class='wikitable sortable' \n!" + "ordre !! " + " !! ".join( toprint.columns.values.tolist() ) + "\n"
 
 		for index, row in toprint.head(100).iterrows():
-				num = count - i			
-				text = text + "|-\n|" + str( num ) + " || " + "[[d:" + row['item'] + "|" + row['item'] + "]]" + " || " + row['genere'] + " || " + " [["+row['article']+"]]" + " || " + row['cdate']  + " || " +  "{{u|"+str( row['cuser'] ) + "}}" + "\n"
-				i = i + 1
+			num = count - i			
+			text = text + "|-\n|" + str( num ) + " || " + "[[d:" + row['item'] + "|" + row['item'] + "]]" + " || " + row['genere'] + " || " + " [["+row['article']+"]]" + " || " + row['cdate']  + " || " +  "{{u|"+str( row['cuser'] ) + "}}" + "\n"
+			i = i + 1
 			
 		text = text + "|}"
 		
@@ -109,10 +131,11 @@ def printToWiki( toprint, mwclient, targetpage, milestonepage ):
 def printCheckWiki( toprint, mwclient, checkpage ):
 	
 	
-		text = "{| class='wikitable sortable' \n!" + " !! ".join( toprint.columns.values.tolist() ) + "\n"
+		text = "{| class='wikitable sortable' \n!" + " !! ".join( toprint.columns.values.tolist() ) + "!! iwiki\n"
 
 		for index, row in toprint.iterrows():
-				text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + " || || " +  "\n"
+			iwiki = checkWikiDataJSON( str( row['item'] ) )
+			text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + " || || || " + iwiki + "\n"
 			
 		text = text + "|}"
 		
