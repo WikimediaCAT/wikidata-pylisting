@@ -26,17 +26,18 @@ dbfile = "allbios.db"
 authorities = {}
 
 def addToDb( id, props, conn ):
+    
+    c = conn.cursor()
+    records = []
 
-		c = conn.cursor()
+    for prop in props:
+        records.append( ( id, prop ) )
 
-		for prop in props:
+    c.executemany( "INSERT INTO `authorities` (`id`, `authority`) VALUES (?, ?)", records )
 
-			c.execute( "INSERT INTO `authorities` (`id`, `authority`) VALUES (?, ?)", [ id, prop ] )
+    conn.commit()
 
-
-		conn.commit()
-
-		return True
+    return True
 
 
 if "authorities" in args:
@@ -54,7 +55,6 @@ if "dump" in args:
         conn = sqlite3.connect( dbfile )
         cur = conn.cursor()
         cur.execute("DROP TABLE IF EXISTS `authorities`;")
-        cur.execute("VACUUM;");
         cur.execute("CREATE TABLE IF NOT EXISTS `authorities` (  `id` VARCHAR(25), `authority` VARCHAR(25) ) ;")
         cur.execute("CREATE INDEX idx_authorities ON authorities (authority);")
 

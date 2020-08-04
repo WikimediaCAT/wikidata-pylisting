@@ -132,6 +132,7 @@ def saveToDb( toprint, conn ):
 
 		c = conn.cursor()
 
+		# TODO: To move to gender table
 		for index, row in toprint.iterrows():
 
 			c.execute( "INSERT INTO `wikidata` (`id`, `article`, `gender`) VALUES (?, ?, ?)", [ row['item'], row['article'], row['genere'] ] )
@@ -161,9 +162,8 @@ def printCheckWiki( toprint, mwclient, checkpage ):
 
 cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255), `cdate` datetime, `cuser` VARCHAR(255) ) ;")
 cur.execute("DROP TABLE IF EXISTS `wikidata`;")
-cur.execute("VACUUM;");
 cur.execute("CREATE TABLE IF NOT EXISTS `wikidata` ( `id` varchar(24), `article` VARCHAR(255), `gender` VARCHAR(24) ) ;")
-cur.execute("CREATE UNIQUE INDEX idx_id ON wikidata (id);")
+cur.execute("CREATE INDEX idx_unique ON wikidata (id, article, gender);")
 cur.execute("CREATE INDEX idx_article ON wikidata (article);")
 cur.execute("CREATE INDEX idx_gender ON wikidata (gender);")
 
@@ -239,7 +239,10 @@ current2 = pd.merge( c, stored2, how='left', on='article' )
 toprint = current2.sort_values(by='cdate', ascending=False )
 printToWiki( toprint[(toprint['cdate'].notnull()) ], mwclient, targetpage, milestonepage )
 # We store everything in DB
-saveToDb(  toprint[(toprint['cdate'].notnull()) ], conn )
+
+# Clean a bit
+toprint = toprint[(toprint['cdate'].notnull())].drop_duplicates(subset=['item', 'article', 'genere'], keep='last')
+saveToDb( toprint, conn )
 
 # Moved pages
 printCheckWiki( current2[(current2['cdate'].isnull()) ], mwclient, checkpage )
