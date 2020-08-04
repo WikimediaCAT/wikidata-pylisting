@@ -5,8 +5,10 @@ import io
 import argparse
 import pprint
 import sqlite3
+import MySQLdb
 import time
 import re
+import json
 import csv
 import gzip # Using gzip file
 
@@ -15,6 +17,7 @@ pp = pprint.PrettyPrinter(indent=4)
 parser = argparse.ArgumentParser(description="""Script for parsing authorities from dumps and DB""")
 parser.add_argument("-dump",help="""Path to Dump file""")
 parser.add_argument("-authorities",help="""Path to Authorities file""")
+parser.add_argument("-config",help="""Path to a JSON file with configuration options!""")
 args = parser.parse_args()
 
 host = "ca.wikipedia.org"
@@ -24,9 +27,26 @@ protocol = "https"
 data = {}
 dbfile = "allbios.db"
 authorities = {}
+conn = None
+
+if "config" in args:
+    if args.config is not None:
+        with open(args.config) as json_data_file:
+            data = json.load(json_data_file)
+
+if "mysql" in data:
+	dbfile = None
+	conn = MySQLdb.connect(host=data["mysql"]["host"], user=data["mysql"]["user"], passwd=data["mysql"]["password"], db=data["mysql"]["database"])
+
+if "dbfile" in data:
+	dbfile = data["dbfile"]
+	conn = sqlite3.connect( dbfile )
+
+if conn is not None:
+	exit()
 
 def addToDb( id, props, conn ):
-    
+
     c = conn.cursor()
     records = []
 

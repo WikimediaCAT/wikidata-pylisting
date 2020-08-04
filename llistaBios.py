@@ -12,6 +12,7 @@ import pprint
 import json
 import mwclient
 import sqlite3
+import MySQLdb
 import time
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -32,6 +33,8 @@ targetpage = "User:Toniher/Bios"
 milestonepage = "Plantilla:TotalBios"
 checkpage = "User:Toniher/CheckBios"
 
+conn = None
+
 if "config" in args:
 		if args.config is not None:
 				with open(args.config) as json_data_file:
@@ -47,8 +50,13 @@ if "mw" in data:
 		if "protocol" in data["mw"]:
 				protocol = data["mw"]["protocol"]
 
+if "mysql" in data:
+	dbfile = None
+	conn = MySQLdb.connect(host=data["mysql"]["host"], user=data["mysql"]["user"], passwd=data["mysql"]["password"], db=data["mysql"]["database"])
+
 if "dbfile" in data:
-		dbfile = data["dbfile"]
+	dbfile = data["dbfile"]
+	conn = sqlite3.connect( dbfile )
 
 if "targetpage" in data:
 		targetpage = data["targetpage"]
@@ -64,7 +72,9 @@ if user and pwd :
 		# Login parameters
 		site.login(user, pwd)
 
-conn = sqlite3.connect( dbfile )
+if conn is not None:
+	exit()
+
 cur = conn.cursor()
 
 def checkWikiDataJSON( item ) :
@@ -161,6 +171,9 @@ def printCheckWiki( toprint, mwclient, checkpage ):
 		return True
 
 cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255), `cdate` datetime, `cuser` VARCHAR(255) ) ;")
+cur.execute("CREATE INDEX idx_article ON bios (article);")
+cur.execute("CREATE INDEX idx_cdate ON bios (cdate);")
+cur.execute("CREATE INDEX idx_cuser ON bios (cuser);")
 cur.execute("DROP TABLE IF EXISTS `wikidata`;")
 cur.execute("CREATE TABLE IF NOT EXISTS `wikidata` ( `id` varchar(24), `article` VARCHAR(255), `gender` VARCHAR(24) ) ;")
 cur.execute("CREATE INDEX idx_unique ON wikidata (id, article, gender);")
