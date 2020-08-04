@@ -49,10 +49,10 @@ if "mw" in data:
 
 if "dbfile" in data:
 		dbfile = data["dbfile"]
-		
+
 if "targetpage" in data:
 		targetpage = data["targetpage"]
-		
+
 if "milestonepage" in data:
 		milestonepage = data["milestonepage"]
 
@@ -68,85 +68,102 @@ conn = sqlite3.connect( dbfile )
 cur = conn.cursor()
 
 def checkWikiDataJSON( item ) :
-		
+
 		url = "https://www.wikidata.org/wiki/Special:EntityData/" + item + ".json"
-		
+
 		req = request.Request(url)
-				
+
 		##parsing response
 		r = request.urlopen(req).read()
 		cont = json.loads(r.decode('utf-8'))
-		
+
 		##parcing json
 		entitycont = cont['entities'][item]
-		
-		iw  = [] 
+
+		iw  = []
 		if 'sitelinks' in entitycont :
 			iw = list( entitycont['sitelinks'] )
 
 		time.sleep( 0.2 )
 		return iw
-	
+
 
 def insertInDB( new_stored, conn ):
-		
+
 		c = conn.cursor()
-		
+
 		for index, row in new_stored.iterrows():
 
 			c.execute( "INSERT INTO `bios`(`article`, `cdate`, `cuser`) VALUES (?, ?, ?)", [ row['article'], row['cdate'], row['cuser'] ] )
-		
-		
+
+
 		conn.commit()
-		
+
 		return True
 
 def printToWiki( toprint, mwclient, targetpage, milestonepage ):
-	
+
 		count = toprint.shape[0]
 		i = 0
-		
+
 		print( count )
 
 		text = "{| class='wikitable sortable' \n!" + "ordre !! " + " !! ".join( toprint.columns.values.tolist() ) + "\n"
 
 		for index, row in toprint.head(100).iterrows():
-			num = count - i			
+			num = count - i
 			text = text + "|-\n|" + str( num ) + " || " + "[[d:" + row['item'] + "|" + row['item'] + "]]" + " || " + row['genere'] + " || " + " [["+row['article']+"]]" + " || " + row['cdate']  + " || " +  "{{u|"+str( row['cuser'] ) + "}}" + "\n"
 			i = i + 1
-			
+
 		text = text + "|}"
-		
+
 		print( text )
 		page = site.pages[ targetpage ]
 		page.save( text, summary='Bios', minor=False, bot=True )
-		
+
 		if milestonepage :
 			sittext = str( count ) + "\n<noinclude>[[Categoria:Plantilles]]</noinclude>"
 			page = site.pages[ milestonepage ]
 			page.save( sittext, summary='Bios', minor=False, bot=True )
-		
+
 		return True
-	
+
+def saveToDb( toprint, conn ):
+
+		c = conn.cursor()
+
+		for index, row in toprint.iterrows():
+
+			c.execute( "INSERT INTO `wikidata` (`id`, `article`, `gender`) VALUES (?, ?, ?)", [ row['item'], row['article'], row['genere'] ] )
+
+
+		conn.commit()
+
+		return True
+
 def printCheckWiki( toprint, mwclient, checkpage ):
-	
-	
+
+
 		text = "{| class='wikitable sortable' \n!" + " !! ".join( toprint.columns.values.tolist() ) + "!! iwiki !! iwikicount\n"
 
 		for index, row in toprint.iterrows():
 			iwiki = checkWikiDataJSON( str( row['item'] ) )
 			iwikicount = len( iwiki )
 			text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + " || || || " + ", ".join( iwiki ) + "|| " + str( iwikicount ) + "\n"
-			
+
 		text = text + "|}"
-		
+
 		print( text )
 		page = site.pages[ checkpage ]
 		page.save( text, summary='Bios', minor=False, bot=True )
-		
+
 		return True
 
 cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255), `cdate` datetime, `cuser` VARCHAR(255) ) ;")
+cur.execute("DROP TABLE IF EXISTS `wikidata`;")
+cur.execute("VACUUM;");
+cur.execute("CREATE TABLE IF NOT EXISTS `wikidata` ( `id` varchar(24), `article` VARCHAR(255), `gender` VARCHAR(24) ) ;")
+
 
 query = """
 SELECT ?item ?genere ?article WHERE {
@@ -218,9 +235,10 @@ current2 = pd.merge( c, stored2, how='left', on='article' )
 # Here we list, order and have fun
 toprint = current2.sort_values(by='cdate', ascending=False )
 printToWiki( toprint[(toprint['cdate'].notnull()) ], mwclient, targetpage, milestonepage )
+# We store everything in DB
+saveToDb(  toprint[(toprint['cdate'].notnull()) ], conn )
 
 # Moved pages
 printCheckWiki( current2[(current2['cdate'].isnull()) ], mwclient, checkpage )
 
 conn.close()
-
