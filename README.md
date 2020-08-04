@@ -34,3 +34,9 @@ https://ca.wikipedia.org/w/api.php?action=query&prop=revisions&rvlimit=1&rvprop=
 Query:
 
     curl -X GET https://query.wikidata.org/sparql?query=(SPARQL) -H "Accept: text/tab-separated-values"
+
+# TODO
+
+Passar a MySQL per a més rapid rendiment
+
+
