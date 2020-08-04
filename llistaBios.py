@@ -94,7 +94,7 @@ def insertInDB( new_stored, conn ):
 
 		for index, row in new_stored.iterrows():
 
-			c.execute( "INSERT INTO `bios`(`article`, `cdate`, `cuser`) VALUES (?, ?, ?)", [ row['article'], row['cdate'], row['cuser'] ] )
+			c.execute( "INSERT INTO `bios` (`article`, `cdate`, `cuser`) VALUES (?, ?, ?)", [ row['article'], row['cdate'], row['cuser'] ] )
 
 
 		conn.commit()
@@ -163,6 +163,9 @@ cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255), `cdate
 cur.execute("DROP TABLE IF EXISTS `wikidata`;")
 cur.execute("VACUUM;");
 cur.execute("CREATE TABLE IF NOT EXISTS `wikidata` ( `id` varchar(24), `article` VARCHAR(255), `gender` VARCHAR(24) ) ;")
+cur.execute("CREATE UNIQUE INDEX idx_id ON wikidata (id);")
+cur.execute("CREATE INDEX idx_article ON wikidata (article);")
+cur.execute("CREATE INDEX idx_gender ON wikidata (gender);")
 
 
 query = """
