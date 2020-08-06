@@ -37,6 +37,6 @@ Query:
 
 # TODO
 
-Passar a MySQL per a més rapid rendiment
-
+* Unificar dones amb biografies generals i altres opcions
+* Gestio genere i wikidata
 
