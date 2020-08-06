@@ -20,13 +20,10 @@ parser.add_argument("-authorities",help="""Path to Authorities file""")
 parser.add_argument("-config",help="""Path to a JSON file with configuration options!""")
 args = parser.parse_args()
 
-host = "ca.wikipedia.org"
-user = None
-password = None
-protocol = "https"
 data = {}
-dbfile = "allbios.db"
 authorities = {}
+mysqlmode = False
+
 conn = None
 
 if "config" in args:
@@ -35,17 +32,17 @@ if "config" in args:
             data = json.load(json_data_file)
 
 if "mysql" in data:
-	dbfile = None
-	conn = MySQLdb.connect(host=data["mysql"]["host"], user=data["mysql"]["user"], passwd=data["mysql"]["password"], db=data["mysql"]["database"])
+    dbfile = None
+    mysqlmode = True
+    conn = MySQLdb.connect(host=data["mysql"]["host"], user=data["mysql"]["user"], passwd=data["mysql"]["password"], db=data["mysql"]["database"], use_unicode=True, charset='utf8', init_command='SET NAMES UTF8')
 
-if "dbfile" in data:
-	dbfile = data["dbfile"]
-	conn = sqlite3.connect( dbfile )
 
-if conn is not None:
-	exit()
+if conn is None:
+    print("NO CONNECTION")
+    exit()
 
-def addToDb( id, props, conn ):
+
+def addToDb( id, props, conn, iter ):
 
     c = conn.cursor()
     records = []
@@ -53,11 +50,15 @@ def addToDb( id, props, conn ):
     for prop in props:
         records.append( ( id, prop ) )
 
-    c.executemany( "INSERT INTO `authorities` (`id`, `authority`) VALUES (?, ?)", records )
+    c.executemany( "INSERT INTO `authorities` (`id`, `authority`) VALUES ( %s, %s )", records )
 
-    conn.commit()
+    if iter > 10000 :
+        conn.commit()
+        iter = 0
+    else :
+        iter = iter + 1
 
-    return True
+    return iter
 
 
 if "authorities" in args:
@@ -72,12 +73,13 @@ if "authorities" in args:
 if "dump" in args:
     if args.dump is not None:
 
-        conn = sqlite3.connect( dbfile )
         cur = conn.cursor()
         cur.execute("DROP TABLE IF EXISTS `authorities`;")
         cur.execute("CREATE TABLE IF NOT EXISTS `authorities` (  `id` VARCHAR(25), `authority` VARCHAR(25) ) ;")
+        cur.execute("CREATE INDEX idx_id ON authorities (id);")
         cur.execute("CREATE INDEX idx_authorities ON authorities (authority);")
 
+        iter = 0
         with gzip.open(args.dump,'rt') as f:
             for line in f:
                 detectid = re.findall( r'\"id\":\"(Q\d+)\"', line )
@@ -91,4 +93,6 @@ if "dump" in args:
                             authp.append( prop )
                     # pp.pprint( authp )
                     if len( authp ) > 0:
-                        addToDb( id, authp, conn )
+                        iter = addToDb( id, authp, conn, iter )
+
+        conn.commit()
