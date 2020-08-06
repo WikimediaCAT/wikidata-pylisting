@@ -72,7 +72,8 @@ if user and pwd :
 		# Login parameters
 		site.login(user, pwd)
 
-if conn is not None:
+if conn is None:
+	print("CONNECTION PROBLEM")
 	exit()
 
 cur = conn.cursor()
@@ -171,14 +172,14 @@ def printCheckWiki( toprint, mwclient, checkpage ):
 		return True
 
 cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255), `cdate` datetime, `cuser` VARCHAR(255) ) ;")
-cur.execute("CREATE INDEX idx_article ON bios (article);")
-cur.execute("CREATE INDEX idx_cdate ON bios (cdate);")
-cur.execute("CREATE INDEX idx_cuser ON bios (cuser);")
+cur.execute("CREATE INDEX IF NOT EXISTS `idx_article` ON bios (`article`);")
+cur.execute("CREATE INDEX IF NOT EXISTS `idx_cdate` ON bios (`cdate`);")
+cur.execute("CREATE INDEX IF NOT EXISTS `idx_cuser` ON bios (`cuser`);")
 cur.execute("DROP TABLE IF EXISTS `wikidata`;")
 cur.execute("CREATE TABLE IF NOT EXISTS `wikidata` ( `id` varchar(24), `article` VARCHAR(255), `gender` VARCHAR(24) ) ;")
-cur.execute("CREATE INDEX idx_unique ON wikidata (id, article, gender);")
-cur.execute("CREATE INDEX idx_article ON wikidata (article);")
-cur.execute("CREATE INDEX idx_gender ON wikidata (gender);")
+cur.execute("CREATE INDEX IF NOT EXISTS `idx_unique` ON wikidata (id, article, gender);")
+cur.execute("CREATE INDEX IF NOT EXISTS `idx_article` ON wikidata (article);")
+cur.execute("CREATE INDEX IF NOT EXISTS `idx_gender` ON wikidata (gender);")
 
 
 query = """
