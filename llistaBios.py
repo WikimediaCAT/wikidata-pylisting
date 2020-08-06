@@ -32,6 +32,7 @@ dbfile = "allbios.db"
 targetpage = "User:Toniher/Bios"
 milestonepage = "Plantilla:TotalBios"
 checkpage = "User:Toniher/CheckBios"
+mysqlmode = False
 
 conn = None
 
@@ -51,8 +52,9 @@ if "mw" in data:
 				protocol = data["mw"]["protocol"]
 
 if "mysql" in data:
+	mysqlmode = True
 	dbfile = None
-	conn = MySQLdb.connect(host=data["mysql"]["host"], user=data["mysql"]["user"], passwd=data["mysql"]["password"], db=data["mysql"]["database"])
+	conn = MySQLdb.connect(host=data["mysql"]["host"], user=data["mysql"]["user"], passwd=data["mysql"]["password"], db=data["mysql"]["database"], use_unicode=True, charset='utf8', init_command='SET NAMES UTF8')
 
 if "dbfile" in data:
 	dbfile = data["dbfile"]
@@ -105,7 +107,12 @@ def insertInDB( new_stored, conn ):
 
 		for index, row in new_stored.iterrows():
 
-			c.execute( "INSERT INTO `bios` (`article`, `cdate`, `cuser`) VALUES (?, ?, ?)", [ row['article'], row['cdate'], row['cuser'] ] )
+			if mysqlmode:
+				# Handling Timezone
+				row['cdate'] = row['cdate'].replace( "T", " ")
+				row['cdate'] = row['cdate'].replace( "Z", "")
+
+			c.execute( "INSERT INTO `bios` (`article`, `cdate`, `cuser`) VALUES (%s, %s, %s)", [ row['article'], row['cdate'], row['cuser'] ] )
 
 
 		conn.commit()
@@ -123,7 +130,7 @@ def printToWiki( toprint, mwclient, targetpage, milestonepage ):
 
 		for index, row in toprint.head(100).iterrows():
 			num = count - i
-			text = text + "|-\n|" + str( num ) + " || " + "[[d:" + row['item'] + "|" + row['item'] + "]]" + " || " + row['genere'] + " || " + " [["+row['article']+"]]" + " || " + row['cdate']  + " || " +  "{{u|"+str( row['cuser'] ) + "}}" + "\n"
+			text = text + "|-\n|" + str( num ) + " || " + "[[d:" + row['item'] + "|" + row['item'] + "]]" + " || " + row['genere'] + " || " + " [["+row['article']+"]]" + " || " + str( row['cdate'] )  + " || " +  "{{u|"+str( row['cuser'] ) + "}}" + "\n"
 			i = i + 1
 
 		text = text + "|}"
@@ -146,7 +153,7 @@ def saveToDb( toprint, conn ):
 		# TODO: To move to gender table
 		for index, row in toprint.iterrows():
 
-			c.execute( "INSERT INTO `wikidata` (`id`, `article`, `gender`) VALUES (?, ?, ?)", [ row['item'], row['article'], row['genere'] ] )
+			c.execute( "INSERT INTO `wikidata` (`id`, `article`, `gender`) VALUES (%s, %s, %s)", [ row['item'], row['article'], row['genere'] ] )
 
 
 		conn.commit()
@@ -216,6 +223,8 @@ current = pd.merge( c, stored, how='left', on='article' )
 
 # Iterate only entries with null user or timestamp
 missing = current[(current['cuser'].isnull()) & (current['cdate'].isnull())]
+
+print( missing )
 
 new_stored = pd.DataFrame( columns = [ 'article', 'cdate', 'cuser' ] )
 
