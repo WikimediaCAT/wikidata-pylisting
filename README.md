@@ -35,6 +35,11 @@ Query:
 
     curl -X GET https://query.wikidata.org/sparql?query=(SPARQL) -H "Accept: text/tab-separated-values"
 
+# Autoritats
+
+      python autoritiesCheck.py -config /home/toniher/remote-work/mediawiki/allbios.json -authorities conf/autoritats.tsv -dump /scratch/wikidata/20200727/wikidata-20200727-all.json.gz
+
+
 # TODO
 
 * Unificar dones amb biografies generals i altres opcions
