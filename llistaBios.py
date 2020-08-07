@@ -271,6 +271,9 @@ printToWiki( toprint[(toprint['cdate'].notnull()) ], mwclient, targetpage, miles
 toprint = toprint[(toprint['cdate'].notnull())].drop_duplicates(subset=['item', 'article', 'genere'], keep='last')
 saveToDb( toprint, conn )
 
+# TODO: Delete step of old bios pages -
+# select b.article, w.id from bios b left join wikidata w on b.article=w.article where w.id is null order by b.article ;
+
 # Moved pages
 printCheckWiki( current2[(current2['cdate'].isnull()) ], mwclient, checkpage )
 
