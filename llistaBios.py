@@ -164,6 +164,19 @@ def saveToDb( toprint, conn ):
 
 		return True
 
+def cleanDb( conn ):
+
+	c = conn.cursor()
+	c.execute( "SELECT * from wikidata" )
+
+	if c.rowcount > 0:
+		# TODO Proceed cleaning
+		c.execute( "delete from bios where article in (select b.article from bios b left join wikidata w on b.article=w.article where w.id is null order by b.article ) ;")
+
+	conn.commit()
+
+	return True
+
 def printCheckWiki( toprint, mwclient, checkpage ):
 
 
@@ -271,8 +284,7 @@ printToWiki( toprint[(toprint['cdate'].notnull()) ], mwclient, targetpage, miles
 toprint = toprint[(toprint['cdate'].notnull())].drop_duplicates(subset=['item', 'article', 'genere'], keep='last')
 saveToDb( toprint, conn )
 
-# TODO: Delete step of old bios pages -
-# select b.article, w.id from bios b left join wikidata w on b.article=w.article where w.id is null order by b.article ;
+cleanDb( conn )
 
 # Moved pages
 printCheckWiki( current2[(current2['cdate'].isnull()) ], mwclient, checkpage )
