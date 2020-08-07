@@ -112,7 +112,11 @@ def insertInDB( new_stored, conn ):
 				row['cdate'] = row['cdate'].replace( "T", " ")
 				row['cdate'] = row['cdate'].replace( "Z", "")
 
-			c.execute( "INSERT INTO `bios` (`article`, `cdate`, `cuser`) VALUES (%s, %s, %s)", [ row['article'], row['cdate'], row['cuser'] ] )
+			c.execute( "SELECT * from bios where article = %s ", [ row['article'] ] )
+			if c.rowcount > 0:
+				c.execute( "UPDATE `bios` SET `cdate` = %s, `cuser` = %s where article = %s ", [ row['cdate'], row['cuser'], row['article'] ] )
+			else :
+				c.execute( "INSERT INTO `bios` (`article`, `cdate`, `cuser`) VALUES (%s, %s, %s)", [ row['article'], row['cdate'], row['cuser'] ] )
 
 
 		conn.commit()
