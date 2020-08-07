@@ -154,11 +154,16 @@ def saveToDb( toprint, conn ):
 
 		c = conn.cursor()
 
-		# TODO: To move to gender table
 		for index, row in toprint.iterrows():
 
-			c.execute( "INSERT INTO `wikidata` (`id`, `article`, `gender`) VALUES (%s, %s, %s)", [ row['item'], row['article'], row['genere'] ] )
+			c.execute( "INSERT INTO `gender` (`id`, `gender`) VALUES (%s, %s)", [ row['item'], row['genere'] ] )
 
+		conn.commit()
+
+		toprint = toprint.drop_duplicates(subset=['item', 'article'], keep='last')
+		for index, row in toprint.iterrows():
+
+			c.execute( "INSERT INTO `wikidata` (`id`, `article`) VALUES (%s, %s)", [ row['item'], row['article'] ] )
 
 		conn.commit()
 
@@ -200,11 +205,15 @@ cur.execute("CREATE INDEX IF NOT EXISTS `idx_article` ON bios (`article`);")
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_cdate` ON bios (`cdate`);")
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_cuser` ON bios (`cuser`);")
 cur.execute("DROP TABLE IF EXISTS `wikidata`;")
-cur.execute("CREATE TABLE IF NOT EXISTS `wikidata` ( `id` varchar(24), `article` VARCHAR(255), `gender` VARCHAR(24) ) ;")
-cur.execute("CREATE INDEX IF NOT EXISTS `idx_unique` ON wikidata (id, article, gender);")
+cur.execute("CREATE TABLE IF NOT EXISTS `wikidata` ( `id` varchar(24), `article` VARCHAR(255) ) ;")
+cur.execute("CREATE INDEX IF NOT EXISTS `idx_unique` ON wikidata (id, article);")
+cur.execute("CREATE INDEX IF NOT EXISTS `idx_id` ON wikidata (id);")
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_article` ON wikidata (article);")
-cur.execute("CREATE INDEX IF NOT EXISTS `idx_gender` ON wikidata (gender);")
-
+cur.execute("DROP TABLE IF EXISTS `gender`;")
+cur.execute("CREATE TABLE IF NOT EXISTS `gender` ( `id` varchar(24), `gender` VARCHAR(24) ) ;")
+cur.execute("CREATE INDEX IF NOT EXISTS `idx_unique` ON gender (id, gender);")
+cur.execute("CREATE INDEX IF NOT EXISTS `idx_id` ON gender (id);")
+cur.execute("CREATE INDEX IF NOT EXISTS `idx_gender` ON gender (gender);")
 
 query = """
 SELECT ?item ?genere ?article WHERE {
