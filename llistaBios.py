@@ -286,11 +286,12 @@ current2 = pd.merge( c, stored2, how='left', on='article' )
 
 # Here we list, order and have fun
 toprint = current2.sort_values(by='cdate', ascending=False )
+toprint = toprint[(toprint['cdate'].notnull())].drop_duplicates(subset=['item', 'article', 'genere'], keep='last')
+
 printToWiki( toprint[(toprint['cdate'].notnull()) ], mwclient, targetpage, milestonepage )
 # We store everything in DB
 
 # Clean a bit
-toprint = toprint[(toprint['cdate'].notnull())].drop_duplicates(subset=['item', 'article', 'genere'], keep='last')
 saveToDb( toprint, conn )
 
 cleanDb( conn )
