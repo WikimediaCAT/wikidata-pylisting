@@ -31,6 +31,9 @@ data = {}
 dbfile = "allbios.db"
 targetpage = "User:Toniher/Bios"
 milestonepage = "Plantilla:TotalBios"
+targetpagedones = "Viquiprojecte:Viquidones/Progrés"
+milestonepagedones = "Plantilla:FitaDones"
+
 checkpage = "User:Toniher/CheckBios"
 mysqlmode = False
 
@@ -286,14 +289,19 @@ current2 = pd.merge( c, stored2, how='left', on='article' )
 
 # Here we list, order and have fun
 toprint = current2.sort_values(by='cdate', ascending=False )
-toprint = toprint[(toprint['cdate'].notnull())].drop_duplicates(subset=['item', 'article', 'genere'], keep='last')
+toprint = toprint[(toprint['cdate'].notnull())]
 
-printToWiki( toprint[(toprint['cdate'].notnull()) ], mwclient, targetpage, milestonepage )
+clean_duplicates = toprint.drop_duplicates(subset=['item', 'article', 'genere'], keep='last')
+
+printToWiki( clean_duplicates, mwclient, targetpage, milestonepage )
+
+dones = toprint[toprint['genere'] == "Q6581072"]
+printToWiki( dones, mwclient, targetpagedones, milestonepagedones )
+
 # We store everything in DB
 
 # Clean a bit
-saveToDb( toprint, conn )
-
+saveToDb( clean_duplicates, conn )
 cleanDb( conn )
 
 # Moved pages
