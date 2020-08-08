@@ -245,17 +245,17 @@ c['genere'] = c['genere'].apply( lambda x: x.replace("http://www.wikidata.org/en
 c['item'] = c['item'].apply( lambda x: x.replace("http://www.wikidata.org/entity/", "") )
 
 # Get stored info
-stored = pd.read_sql_query("SELECT * from `bios`", conn )
+stored = pd.read_sql_query("SELECT * from `bios`", conn)
 
 # Merge both subsets centered in actual data
-current = pd.merge( c, stored, how='left', on='article' )
+current = pd.merge(c, stored, how='left', on='article')
 
 # Iterate only entries with null user or timestamp
 missing = current[(current['cuser'].isnull()) & (current['cdate'].isnull())]
 
-print( missing )
+print(missing)
 
-new_stored = pd.DataFrame( columns = [ 'article', 'cdate', 'cuser' ] )
+new_stored = pd.DataFrame(columns = ['article', 'cdate', 'cuser'])
 
 for index, row in missing.iterrows():
 		titles = row['article']
@@ -276,35 +276,35 @@ for index, row in missing.iterrows():
 								new_stored = new_stored.append( { 'article': titles, 'cdate': timestamp, 'cuser': userrev  }, ignore_index=True )
 								time.sleep( 0.1 )
 
-print( new_stored )
+print(new_stored)
 
 # INSERT or REPLACE sqlite new_stored
-insertInDB( new_stored, conn )
+insertInDB(new_stored, conn)
 
 # Repeat stored
-stored2 = pd.read_sql_query("SELECT * from `bios`", conn )
+stored2 = pd.read_sql_query("SELECT * from `bios`", conn)
 
 # Merge both subsets centered in actual data
-current2 = pd.merge( c, stored2, how='left', on='article' )
+current2 = pd.merge(c, stored2, how='left', on='article')
 
 # Here we list, order and have fun
-toprint = current2.sort_values(by='cdate', ascending=False )
+toprint = current2.sort_values(by='cdate', ascending=False)
 toprint = toprint[(toprint['cdate'].notnull())]
 
 clean_duplicates = toprint.drop_duplicates(subset=['item', 'article', 'genere'], keep='last')
 
-printToWiki( clean_duplicates, mwclient, targetpage, milestonepage )
+printToWiki(clean_duplicates, mwclient, targetpage, milestonepage)
 
 dones = toprint[toprint['genere'] == "Q6581072"]
-printToWiki( dones, mwclient, targetpagedones, milestonepagedones )
+printToWiki(dones, mwclient, targetpagedones, milestonepagedones)
 
 # We store everything in DB
 
 # Clean a bit
-saveToDb( clean_duplicates, conn )
-cleanDb( conn )
+saveToDb(clean_duplicates, conn)
+cleanDb(conn)
 
 # Moved pages
-printCheckWiki( current2[(current2['cdate'].isnull()) ], mwclient, checkpage )
+printCheckWiki(current2[(current2['cdate'].isnull())], mwclient, checkpage)
 
 conn.close()
