@@ -117,8 +117,10 @@ def insertInDB( new_stored, conn ):
 
 			c.execute( "SELECT * from bios where article = %s ", [ row['article'] ] )
 			if c.rowcount > 0:
+				print("UPDATE " + row['article'])
 				c.execute( "UPDATE `bios` SET `cdate` = %s, `cuser` = %s where article = %s ", [ row['cdate'], row['cuser'], row['article'] ] )
 			else :
+				print("INSERT " + row['article'])
 				c.execute( "INSERT INTO `bios` (`article`, `cdate`, `cuser`) VALUES (%s, %s, %s)", [ row['article'], row['cdate'], row['cuser'] ] )
 
 
