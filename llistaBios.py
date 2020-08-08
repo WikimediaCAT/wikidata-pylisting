@@ -131,7 +131,7 @@ def printToWiki( toprint, mwclient, targetpage, milestonepage ):
 		count = toprint.shape[0]
 		i = 0
 
-		print( count )
+		print(count)
 
 		text = "{| class='wikitable sortable' \n!" + "ordre !! " + " !! ".join( toprint.columns.values.tolist() ) + "\n"
 
@@ -142,7 +142,6 @@ def printToWiki( toprint, mwclient, targetpage, milestonepage ):
 
 		text = text + "|}"
 
-		print( text )
 		page = site.pages[ targetpage ]
 		page.save( text, summary='Bios', minor=False, bot=True )
 
@@ -252,7 +251,7 @@ current = pd.merge(c, stored, how='left', on='article')
 
 # Iterate only entries with null user or timestamp
 missing = current[(current['cuser'].isnull()) & (current['cdate'].isnull())]
-
+print("MISSING CUSER OR CDATE")
 print(missing)
 
 new_stored = pd.DataFrame(columns = ['article', 'cdate', 'cuser'])
@@ -276,6 +275,7 @@ for index, row in missing.iterrows():
 								new_stored = new_stored.append( { 'article': titles, 'cdate': timestamp, 'cuser': userrev  }, ignore_index=True )
 								time.sleep( 0.1 )
 
+print("MISSING WITH EXTRA INFO FROM API")
 print(new_stored)
 
 # INSERT or REPLACE sqlite new_stored
