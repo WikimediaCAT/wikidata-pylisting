@@ -114,10 +114,10 @@ def insertInDB( new_stored, conn ):
 				row['cdate'] = row['cdate'].replace( "T", " ")
 				row['cdate'] = row['cdate'].replace( "Z", "")
 
-			c.execute( "SELECT * from bios where article = %s ", [ row['article'] ] )
+			c.execute( "SELECT * from bios where BINARY article = %s ", [ row['article'] ] )
 			if c.rowcount > 0:
 				print("UPDATE " + row['article'])
-				c.execute( "UPDATE `bios` SET `cdate` = %s, `cuser` = %s where article = %s ", [ row['cdate'], row['cuser'], row['article'] ] )
+				c.execute( "UPDATE `bios` SET `cdate` = %s, `cuser` = %s where BINARY article = %s ", [ row['cdate'], row['cuser'], row['article'] ] )
 			else :
 				print("INSERT " + row['article'])
 				c.execute( "INSERT INTO `bios` (`article`, `cdate`, `cuser`) VALUES (%s, %s, %s)", [ row['article'], row['cdate'], row['cuser'] ] )
