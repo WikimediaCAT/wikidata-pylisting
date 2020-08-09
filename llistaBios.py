@@ -197,7 +197,6 @@ def printCheckWiki( toprint, mwclient, checkpage ):
 
 		text = text + "|}"
 
-		print( text )
 		page = site.pages[ checkpage ]
 		page.save( text, summary='Bios', minor=False, bot=True )
 
@@ -307,8 +306,5 @@ cleanDb(conn)
 
 # Moved pages
 printCheckWiki(current2[(current2['cdate'].isnull())], mwclient, checkpage)
-
-print("TO CHECK")
-print(current2[(current2['cdate'].isnull())].to_csv(index=False))
 
 conn.close()
