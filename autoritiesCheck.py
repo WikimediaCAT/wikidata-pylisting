@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import io
 import argparse
 import pprint
-import sqlite3
 import MySQLdb
-import time
 import re
 import json
 import csv
-import gzip # Using gzip file
+import gzip  # Using gzip file
 
 pp = pprint.PrettyPrinter(indent=4)
 
