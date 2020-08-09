@@ -193,7 +193,7 @@ def printCheckWiki( toprint, mwclient, checkpage ):
 		for index, row in toprint.iterrows():
 			iwiki = checkWikiDataJSON( str( row['item'] ) )
 			iwikicount = len( iwiki )
-			text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + " || || || " + ", ".join( iwiki ) + "|| " + str( iwikicount ) + "\n"
+			text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + " || " + ", ".join( iwiki ) + "|| " + str( iwikicount ) + "\n"
 
 		text = text + "|}"
 
