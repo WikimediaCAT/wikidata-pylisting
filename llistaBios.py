@@ -3,7 +3,6 @@
 
 import requests
 import pandas as pd
-import numpy as np
 import io
 from urllib.parse import unquote
 from urllib import request
@@ -308,5 +307,8 @@ cleanDb(conn)
 
 # Moved pages
 printCheckWiki(current2[(current2['cdate'].isnull())], mwclient, checkpage)
+
+print("TO CHECK")
+print(current2[(current2['cdate'].isnull())].to_csv(index=False))
 
 conn.close()
