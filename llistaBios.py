@@ -189,7 +189,7 @@ def cleanDb( conn ):
 def printCheckWiki( toprint, mwclient, checkpage ):
 
 
-		text = "{| class='wikitable sortable' \n!" + " !! ".join( toprint.columns.values.tolist() ) + "!! iwiki !! iwikicount\n"
+		text = "{| class='wikitable sortable' \n!" + " !! ".join( ['wikidata', 'genere', 'article' ] ) + "!! iwiki !! iwikicount\n"
 
 		for index, row in toprint.iterrows():
 			iwiki = checkWikiDataJSON( str( row['item'] ) )
