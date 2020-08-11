@@ -10,7 +10,6 @@ import argparse
 import pprint
 import json
 import mwclient
-import sqlite3
 import MySQLdb
 import time
 
@@ -27,14 +26,12 @@ user = None
 password = None
 protocol = "https"
 data = {}
-dbfile = "allbios.db"
 targetpage = "User:Toniher/Bios"
 milestonepage = "Plantilla:TotalBios"
 targetpagedones = "Viquiprojecte:Viquidones/Progrés"
 milestonepagedones = "Plantilla:FitaDones"
 
 checkpage = "User:Toniher/CheckBios"
-mysqlmode = False
 
 conn = None
 
@@ -54,13 +51,7 @@ if "mw" in data:
 				protocol = data["mw"]["protocol"]
 
 if "mysql" in data:
-	mysqlmode = True
-	dbfile = None
-	conn = MySQLdb.connect(host=data["mysql"]["host"], user=data["mysql"]["user"], passwd=data["mysql"]["password"], db=data["mysql"]["database"], use_unicode=True, charset='utf8', init_command='SET NAMES UTF8')
-
-if "dbfile" in data:
-	dbfile = data["dbfile"]
-	conn = sqlite3.connect( dbfile )
+	conn = MySQLdb.connect(host=data["mysql"]["host"], user=data["mysql"]["user"], passwd=data["mysql"]["password"], db=data["mysql"]["database"], use_unicode=True, charset='utf8mb4', init_command='SET NAMES utf8mb4')
 
 if "targetpage" in data:
 		targetpage = data["targetpage"]
@@ -109,10 +100,9 @@ def insertInDB( new_stored, conn ):
 
 		for index, row in new_stored.iterrows():
 
-			if mysqlmode:
-				# Handling Timezone
-				row['cdate'] = row['cdate'].replace( "T", " ")
-				row['cdate'] = row['cdate'].replace( "Z", "")
+			# Handling Timezone
+			row['cdate'] = row['cdate'].replace( "T", " ")
+			row['cdate'] = row['cdate'].replace( "Z", "")
 
 			c.execute( "SELECT * from bios where BINARY article = %s ", [ row['article'] ] )
 			if c.rowcount > 0:
@@ -202,17 +192,17 @@ def printCheckWiki( toprint, mwclient, checkpage ):
 
 		return True
 
-cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255), `cdate` datetime, `cuser` VARCHAR(255) ) ;")
+cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255), `cdate` datetime, `cuser` VARCHAR(255) ) default charset='utf8mb4' collate='utf8mb4_bin';")
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_article` ON bios (`article`);")
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_cdate` ON bios (`cdate`);")
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_cuser` ON bios (`cuser`);")
 cur.execute("DROP TABLE IF EXISTS `wikidata`;")
-cur.execute("CREATE TABLE IF NOT EXISTS `wikidata` ( `id` varchar(24), `article` VARCHAR(255) ) ;")
+cur.execute("CREATE TABLE IF NOT EXISTS `wikidata` ( `id` varchar(24), `article` VARCHAR(255) ) default charset='utf8mb4' collate='utf8mb4_bin';")
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_unique` ON wikidata (id, article);")
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_id` ON wikidata (id);")
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_article` ON wikidata (article);")
 cur.execute("DROP TABLE IF EXISTS `gender`;")
-cur.execute("CREATE TABLE IF NOT EXISTS `gender` ( `id` varchar(24), `gender` VARCHAR(24) ) ;")
+cur.execute("CREATE TABLE IF NOT EXISTS `gender` ( `id` varchar(24), `gender` VARCHAR(24) ) default charset='utf8mb4' collate='utf8mb4_bin';")
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_unique` ON gender (id, gender);")
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_id` ON gender (id);")
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_gender` ON gender (gender);")

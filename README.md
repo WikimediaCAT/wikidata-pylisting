@@ -43,4 +43,3 @@ Query:
 # TODO
 
 * Unificar dones amb biografies generals i altres opcions
-* Marcar UTF-8 a les taules per a evitar problemes
