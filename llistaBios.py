@@ -3,6 +3,7 @@
 
 import requests
 import pandas as pd
+import numpy as np
 import io
 from urllib.parse import unquote
 from urllib import request
@@ -32,6 +33,7 @@ targetpagedones = "Viquiprojecte:Viquidones/Progrés"
 milestonepagedones = "Plantilla:FitaDones"
 
 checkpage = "User:Toniher/CheckBios"
+checkgender = "User:Toniher/CheckGender"
 
 conn = None
 
@@ -147,7 +149,21 @@ def saveToDb( toprint, conn ):
 
 		c = conn.cursor()
 
+		c.execute("DROP TABLE IF EXISTS `wikidata`;")
+		c.execute("CREATE TABLE IF NOT EXISTS `wikidata` ( `id` varchar(24), `article` VARCHAR(255) ) default charset='utf8mb4' collate='utf8mb4_bin';")
+		c.execute("CREATE INDEX IF NOT EXISTS `idx_unique` ON wikidata (id, article);")
+		c.execute("CREATE INDEX IF NOT EXISTS `idx_id` ON wikidata (id);")
+		c.execute("CREATE INDEX IF NOT EXISTS `idx_article` ON wikidata (article);")
+		c.execute("DROP TABLE IF EXISTS `gender`;")
+		c.execute("CREATE TABLE IF NOT EXISTS `gender` ( `id` varchar(24), `gender` VARCHAR(24) ) default charset='utf8mb4' collate='utf8mb4_bin';")
+		c.execute("CREATE INDEX IF NOT EXISTS `idx_unique` ON gender (id, gender);")
+		c.execute("CREATE INDEX IF NOT EXISTS `idx_id` ON gender (id);")
+		c.execute("CREATE INDEX IF NOT EXISTS `idx_gender` ON gender (gender);")
+
 		for index, row in toprint.iterrows():
+
+			if row['genere'] == "nan":
+				row['genere'] = None
 
 			c.execute( "INSERT INTO `gender` (`id`, `gender`) VALUES (%s, %s)", [ row['item'], row['genere'] ] )
 
@@ -175,15 +191,21 @@ def cleanDb( conn ):
 
 	return True
 
-def printCheckWiki( toprint, mwclient, checkpage ):
+def printCheckWiki( toprint, mwclient, checkpage, checkwd=True ):
 
 
-		text = "{| class='wikitable sortable' \n!" + " !! ".join( ['wikidata', 'genere', 'article' ] ) + "!! iwiki !! iwikicount\n"
+		if checkwd:
+			text = "{| class='wikitable sortable' \n!" + " !! ".join( ['wikidata', 'genere', 'article' ] ) + "!! iwiki !! iwikicount\n"
+		else :
+			text = "{| class='wikitable sortable' \n!" + " !! ".join( ['wikidata', 'genere', 'article' ] ) + "\n"
 
 		for index, row in toprint.iterrows():
-			iwiki = checkWikiDataJSON( str( row['item'] ) )
-			iwikicount = len( iwiki )
-			text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + " || " + ", ".join( iwiki ) + "|| " + str( iwikicount ) + "\n"
+			if checkwd is True:
+				iwiki = checkWikiDataJSON( str( row['item'] ) )
+				iwikicount = len( iwiki )
+				text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + " || " + ", ".join( iwiki ) + "|| " + str( iwikicount ) + "\n"
+			else :
+				text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + "\n"
 
 		text = text + "|}"
 
@@ -196,16 +218,6 @@ cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255), `cdate
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_article` ON bios (`article`);")
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_cdate` ON bios (`cdate`);")
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_cuser` ON bios (`cuser`);")
-cur.execute("DROP TABLE IF EXISTS `wikidata`;")
-cur.execute("CREATE TABLE IF NOT EXISTS `wikidata` ( `id` varchar(24), `article` VARCHAR(255) ) default charset='utf8mb4' collate='utf8mb4_bin';")
-cur.execute("CREATE INDEX IF NOT EXISTS `idx_unique` ON wikidata (id, article);")
-cur.execute("CREATE INDEX IF NOT EXISTS `idx_id` ON wikidata (id);")
-cur.execute("CREATE INDEX IF NOT EXISTS `idx_article` ON wikidata (article);")
-cur.execute("DROP TABLE IF EXISTS `gender`;")
-cur.execute("CREATE TABLE IF NOT EXISTS `gender` ( `id` varchar(24), `gender` VARCHAR(24) ) default charset='utf8mb4' collate='utf8mb4_bin';")
-cur.execute("CREATE INDEX IF NOT EXISTS `idx_unique` ON gender (id, gender);")
-cur.execute("CREATE INDEX IF NOT EXISTS `idx_id` ON gender (id);")
-cur.execute("CREATE INDEX IF NOT EXISTS `idx_gender` ON gender (gender);")
 
 query = """
 SELECT ?item ?genere ?article WHERE {
@@ -295,6 +307,9 @@ saveToDb(clean_duplicates, conn)
 cleanDb(conn)
 
 # Moved pages
-printCheckWiki(current2[(current2['cdate'].isnull())], mwclient, checkpage)
+printCheckWiki(current2[(current2['cdate'].isnull())], mwclient, checkpage, True)
+
+printCheckWiki(clean_duplicates[(clean_duplicates['genere'].isna())].sort_values(by='article', ascending=True), mwclient, checkgender, False)
+
 
 conn.close()
