@@ -309,7 +309,6 @@ cleanDb(conn)
 # Moved pages
 printCheckWiki(current2[(current2['cdate'].isnull())], mwclient, checkpage, True)
 
-printCheckWiki(clean_duplicates[(clean_duplicates['genere'].isna())].sort_values(by='article', ascending=True), mwclient, checkgender, False)
-
+printCheckWiki(clean_duplicates[clean_duplicates['genere'] == "nan"].sort_values(by='article', ascending=True), mwclient, checkgender, False)
 
 conn.close()
