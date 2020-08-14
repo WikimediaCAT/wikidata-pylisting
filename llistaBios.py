@@ -314,6 +314,6 @@ printCheckWiki(current2[(current2['cdate'].isnull())], mwclient, checkpage, True
 printCheckWiki(clean_duplicates[clean_duplicates['genere'] == "nan"].sort_values(by='article', ascending=True), mwclient, checkgender, False)
 
 # Print Gender studies
-print(clean_duplicates.groupby('genere').count()[['item']])
+print(clean_duplicates[['item','genere']].groupby('genere')['item'].count().reset_index(name='count').sort_values(['count'], ascending=False))
 
 conn.close()
