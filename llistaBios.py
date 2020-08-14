@@ -81,6 +81,9 @@ def checkWikiDataJSON( item, type="iw", lang="ca" ) :
 
 		url = "https://www.wikidata.org/wiki/Special:EntityData/" + item + ".json"
 
+		if type != "iw" :
+			print(url)
+
 		req = request.Request(url)
 
 		##parsing response
