@@ -28,7 +28,7 @@ password = None
 protocol = "https"
 data = {}
 targetpage = "User:Toniher/Bios"
-milestonepage = "Plantilla:TotalBios"
+milestonepage = "Plantilla:NumBios"
 targetpagedones = "Viquiprojecte:Viquidones/Progrés"
 milestonepagedones = "Plantilla:FitaDones"
 
@@ -244,7 +244,7 @@ def printCountGenere(toprint, mwclient, checkpage):
 				genere = row['genere']
 
 		list_generes.append(genere)
-		text = text + "|-\n|" + str( genere ) + " || " + str( row['count'] ) + "\n"
+		text = text + "|-\n| [[" + str( genere ) + "]] || " + str( row['count'] ) + "\n"
 
 	text = text + "|}"
 
