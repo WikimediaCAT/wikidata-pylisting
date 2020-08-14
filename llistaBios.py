@@ -35,6 +35,8 @@ milestonepagedones = "Plantilla:FitaDones"
 checkpage = "User:Toniher/CheckBios"
 checkgender = "User:Toniher/CheckGender"
 
+countgenderpage = "User:Toniher/StatsGender"
+
 conn = None
 
 if "config" in args:
@@ -75,7 +77,7 @@ if conn is None:
 
 cur = conn.cursor()
 
-def checkWikiDataJSON( item ) :
+def checkWikiDataJSON( item, type="iw", lang="ca" ) :
 
 		url = "https://www.wikidata.org/wiki/Special:EntityData/" + item + ".json"
 
@@ -88,12 +90,18 @@ def checkWikiDataJSON( item ) :
 		##parcing json
 		entitycont = cont['entities'][item]
 
-		iw  = []
-		if 'sitelinks' in entitycont :
-			iw = list( entitycont['sitelinks'] )
+		output  = []
+
+		if type == "label" :
+			if 'labels' in entitycont :
+				if lang in entitycont['labels'] :
+					output.append( entitycont['labels'][lang]['value'] )
+		else :
+			if 'sitelinks' in entitycont :
+				output = list( entitycont['sitelinks'] )
 
 		time.sleep( 0.2 )
-		return iw
+		return output
 
 
 def insertInDB( new_stored, conn ):
@@ -193,26 +201,57 @@ def cleanDb( conn ):
 
 def printCheckWiki( toprint, mwclient, checkpage, checkwd=True ):
 
+	if checkwd:
+		text = "{| class='wikitable sortable' \n!" + " !! ".join( ['wikidata', 'genere', 'article' ] ) + "!! iwiki !! iwikicount\n"
+	else :
+		text = "{| class='wikitable sortable' \n!" + " !! ".join( ['wikidata', 'genere', 'article' ] ) + "\n"
 
-		if checkwd:
-			text = "{| class='wikitable sortable' \n!" + " !! ".join( ['wikidata', 'genere', 'article' ] ) + "!! iwiki !! iwikicount\n"
+	for index, row in toprint.iterrows():
+		if checkwd is True:
+			iwiki = checkWikiDataJSON( str( row['item'] ), "iw" )
+			iwikicount = len( iwiki )
+			text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + " || " + ", ".join( iwiki ) + "|| " + str( iwikicount ) + "\n"
 		else :
-			text = "{| class='wikitable sortable' \n!" + " !! ".join( ['wikidata', 'genere', 'article' ] ) + "\n"
+			text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + "\n"
 
-		for index, row in toprint.iterrows():
-			if checkwd is True:
-				iwiki = checkWikiDataJSON( str( row['item'] ) )
-				iwikicount = len( iwiki )
-				text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + " || " + ", ".join( iwiki ) + "|| " + str( iwikicount ) + "\n"
-			else :
-				text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + "\n"
+	text = text + "|}"
 
-		text = text + "|}"
+	page = site.pages[ checkpage ]
+	page.save( text, summary='Bios', minor=False, bot=True )
 
-		page = site.pages[ checkpage ]
-		page.save( text, summary='Bios', minor=False, bot=True )
+	return True
 
-		return True
+
+def printCountGenere(toprint, mwclient, checkpage):
+
+	list_generes = []
+	text = "{| class='wikitable sortable' \n!" + " !! ".join( ['gènere', 'recompte' ] ) + "\n"
+
+	for index, row in toprint.iterrows():
+
+		genere = "NA"
+
+		if row['genere'] == "unknown" :
+			genere = "desconegut"
+		else :
+			genereA = checkWikiDataJSON(str(row['genere']), "label")
+			if len( genereA ) > 0 :
+				genere = genereA[0]
+			else:
+				genere = row['genere']
+
+		list_generes.append(genere)
+		text = text + "|-\n|" + str( genere ) + "|" + str( row['count'] ) + "\n"
+
+	text = text + "|}"
+
+	text = text + "{{Graph:Chart|width=100|height=100|type=pie|legend=Llegenda|x="+",".join(list_generes)+"|y="+",".join(toprint['count'].tolist())+"|showValues=}}"
+
+	page = site.pages[ checkpage ]
+	page.save(text, summary='Recompte gènere', minor=False, bot=True)
+
+	return True
+
 
 cur.execute("CREATE TABLE IF NOT EXISTS `bios` (  `article` VARCHAR(255), `cdate` datetime, `cuser` VARCHAR(255) ) default charset='utf8mb4' collate='utf8mb4_bin';")
 cur.execute("CREATE INDEX IF NOT EXISTS `idx_article` ON bios (`article`);")
@@ -314,6 +353,10 @@ printCheckWiki(current2[(current2['cdate'].isnull())], mwclient, checkpage, True
 printCheckWiki(clean_duplicates[clean_duplicates['genere'] == "nan"].sort_values(by='article', ascending=True), mwclient, checkgender, False)
 
 # Print Gender studies
-print(clean_duplicates[['item','genere']].groupby('genere')['item'].count().reset_index(name='count').sort_values(['count'], ascending=False))
+countgenere = clean_duplicates[['item','genere']].groupby('genere')['item'].count().reset_index(name='count').sort_values(['count'], ascending=False)
+print(countgenere)
+
+printCountGenere(countgenere, mwclient, countgenderpage)
+
 
 conn.close()
