@@ -248,7 +248,8 @@ def printCountGenere(toprint, mwclient, checkpage):
 
 	text = text + "|}"
 
-	text = text + "{{Graph:Chart|width=100|height=100|type=pie|legend=Llegenda|x="+",".join(list_generes)+"|y="+",".join(toprint['count'].tolist())+"|showValues=}}"
+	list_count = map(lambda x: str(x), toprint['count'].tolist())
+	text = text + "{{Graph:Chart|width=100|height=100|type=pie|legend=Llegenda|x="+",".join(list_generes)+"|y="+",".join(list_count)+"|showValues=}}"
 
 	page = site.pages[ checkpage ]
 	page.save(text, summary='Recompte gènere', minor=False, bot=True)
