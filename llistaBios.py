@@ -244,7 +244,7 @@ def printCountGenere(toprint, mwclient, checkpage):
 				genere = row['genere']
 
 		list_generes.append(genere)
-		text = text + "|-\n|" + str( genere ) + "|" + str( row['count'] ) + "\n"
+		text = text + "|-\n|" + str( genere ) + " || " + str( row['count'] ) + "\n"
 
 	text = text + "|}"
 
