@@ -250,8 +250,8 @@ def printCountGenere(toprint, mwclient, checkpage):
 
 	text = text + "\n----\n"
 
-	text = text + "* {{TotalBios}} biografies - [[" + targetpage + "|Seguiment]]\n"
-	text = text + "* {{FitaDones}} biografies de dones - [[" + targetpagedones + "|Seguiment]]\n"
+	text = text + "* {{#expr: {{NumBios}} + 0 }} biografies - [[" + targetpage + "|Seguiment]]\n"
+	text = text + "* {{#expr: {{FitaDones}} + 0 }} biografies de dones - [[" + targetpagedones + "|Seguiment]]\n"
 
 	text = text + "\n----\n"
 
