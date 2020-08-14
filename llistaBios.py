@@ -248,6 +248,13 @@ def printCountGenere(toprint, mwclient, checkpage):
 
 	text = text + "|}"
 
+	text = text + "\n----\n"
+
+	text = text + "* {{TotalBios}} biografies - [[" + targetpage + "|Seguiment]]\n"
+	text = text + "* {{FitaDones}} biografies de dones - [[" + targetpagedones + "|Seguiment]]\n"
+
+	text = text + "\n----\n"
+
 	list_count = map(lambda x: str(x), toprint['count'].tolist())
 	text = text + "{{Graph:Chart|width=100|height=100|type=pie|legend=Llegenda|x="+",".join(list_generes)+"|y="+",".join(list_count)+"|showValues=}}"
 
