@@ -39,13 +39,18 @@ if "mysql" in data:
     mysqlmode = True
     conn = MySQLdb.connect(host=data["mysql"]["host"], user=data["mysql"]["user"], passwd=data["mysql"]["password"], db=data["mysql"]["database"], use_unicode=True, charset='utf8', init_command='SET NAMES UTF8')
 
+site = mwclient.Site(host, scheme=protocol)
+if user and pwd :
+		# Login parameters
+		site.login(user, pwd)
+
 
 if conn is None:
     print("NO CONNECTION")
     exit()
 
 
-def addToDb( id, records, conn, iter ):
+def addToDb( id, records, conn ):
 
     c = conn.cursor()
 
@@ -66,6 +71,6 @@ if "title" in args:
 
         # Example syntax: https://en.wikipedia.org/w/api.php?action=query&format=json&list=backlinks&bltitle=philosophy&blnamespace=0&bllimit=100&blcontinue=0|10374
         records = []
-        addToDb( id, records, conn, iter )
+        addToDb( id, records, conn )
 
         conn.commit()

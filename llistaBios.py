@@ -240,7 +240,9 @@ c=pd.read_csv(io.StringIO(response.content.decode('utf-8')))
 
 c['article'] = c['article'].apply(lambda x: unquote( x.replace("https://ca.wikipedia.org/wiki/", "") ) )
 c['genere'] = c['genere'].astype('str')
-c['genere'] = c['genere'].apply( lambda x: x.replace("http://www.wikidata.org/entity/", "") )
+c['genere'] = c['genere'].apply(lambda x: x.replace("http://www.wikidata.org/entity/", ""))
+c['genere'] = c['genere'].apply(lambda x: "unknown" if x.startswith( '_' ) else x)
+
 c['item'] = c['item'].apply( lambda x: x.replace("http://www.wikidata.org/entity/", "") )
 
 # Get stored info
