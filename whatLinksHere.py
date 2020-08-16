@@ -50,7 +50,22 @@ if conn is None:
     exit()
 
 
-def addToDb( id, records, conn ):
+def getBackLinks( site, title, links, continue=None):
+
+    # Example syntax: https://en.wikipedia.org/w/api.php?action=query&format=json&list=backlinks&bltitle=philosophy&blnamespace=0&bllimit=100&blcontinue=0|10374
+
+    if continue:
+        result = site.api('query', list='backlinks', bltitle=args.title, blnamespace=0, bllimit=100, blcontinue=continue)
+    else:
+        result = site.api('query', list='backlinks', bltitle=args.title, blnamespace=0, bllimit=100)
+
+    for page in result['query']['backlinks'].values():
+        if 'title' in page:
+            links.append( page.title )
+
+    return links
+
+def addToDb( records, conn ):
 
     c = conn.cursor()
 
@@ -69,8 +84,17 @@ if "title" in args:
         cur.execute("CREATE INDEX IF NOT EXISTS idx_article ON whatlinks (`article`);")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_against ON whatlinks (`against`);")
 
-        # Example syntax: https://en.wikipedia.org/w/api.php?action=query&format=json&list=backlinks&bltitle=philosophy&blnamespace=0&bllimit=100&blcontinue=0|10374
+        cur.execute("DELETE from whatlinks where against = %s ;", args.title)
+
+        links = []
+        links = getBackLinks( site, args.title, links, None )
+
         records = []
-        addToDb( id, records, conn )
+        links = sorted(set(links))
+
+        for link in links :
+            records.append([link, args.title])
+
+        addToDb( records, conn )
 
         conn.commit()
