@@ -34,6 +34,7 @@ milestonepagedones = "Plantilla:FitaDones"
 
 checkpage = "User:Toniher/CheckBios"
 checkgender = "User:Toniher/CheckGender"
+checkmultigender = "User:Toniher/CheckMultiGender"
 
 countgenderpage = "User:Toniher/StatsGender"
 
@@ -202,20 +203,30 @@ def cleanDb( conn ):
 
 	return True
 
-def printCheckWiki( toprint, mwclient, checkpage, checkwd=True ):
+def printCheckWiki( toprint, mwclient, checkpage, checkwd=True, checkgen=True ):
+
+	if checkgen:
+		header = ['wikidata', 'genere', 'article' ]
+	else:
+		header = ['wikidata', 'article' ]
 
 	if checkwd:
-		text = "{| class='wikitable sortable' \n!" + " !! ".join( ['wikidata', 'genere', 'article' ] ) + "!! iwiki !! iwikicount\n"
+		text = "{| class='wikitable sortable' \n!" + " !! ".join( header ) + "!! iwiki !! iwikicount\n"
 	else :
-		text = "{| class='wikitable sortable' \n!" + " !! ".join( ['wikidata', 'genere', 'article' ] ) + "\n"
+		text = "{| class='wikitable sortable' \n!" + " !! ".join( header ) + "\n"
 
 	for index, row in toprint.iterrows():
+
+		genstr = ""
+		if checkgen:
+			genstr = " || " + str( row['genere'] )
+
 		if checkwd is True:
 			iwiki = checkWikiDataJSON( str( row['item'] ), "iw" )
 			iwikicount = len( iwiki )
-			text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + " || " + ", ".join( iwiki ) + "|| " + str( iwikicount ) + "\n"
+			text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + genstr + " || " + " [["+str( row['article'] )+"]]" + " || " + ", ".join( iwiki ) + "|| " + str( iwikicount ) + "\n"
 		else :
-			text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + " || " + str( row['genere'] ) + " || " + " [["+str( row['article'] )+"]]" + "\n"
+			text = text + "|-\n|" + "[[d:" + str( row['item'] ) + "|" + str( row['item'] ) + "]]" + genstr + " || " + " [["+str( row['article'] )+"]]" + "\n"
 
 	text = text + "|}"
 
@@ -254,8 +265,9 @@ def printCountGenere(toprint, mwclient, checkpage, bios_count):
 
 	text = text + "* {{#expr: {{NumBios}} + 0 }} biografies - [[" + targetpage + "|Seguiment]]\n"
 	text = text + "* {{#expr: {{FitaDones}} + 0 }} biografies de dones - [[" + targetpagedones + "|Seguiment]]\n"
+	text = text + "* COMPROVACIONS: [["+ checkgender +"|Sense gènere]] - [[" + checkmultigender + "|Múltiples gèneres]]\n"
 
-	text = text + "''NOTA: Algunes biografies poden tenir assignades més d'un genère.''\n"
+	text = text + "''NOTA: Algunes biografies poden tenir correctament assignades més d'un genère.''\n"
 	text = text + "\n----\n"
 
 	list_count = map(lambda x: str(x), toprint['count'].tolist())
@@ -369,7 +381,7 @@ cleanDb(conn)
 # Moved pages
 printCheckWiki(current2[(current2['cdate'].isnull())], mwclient, checkpage, True)
 
-printCheckWiki(clean_duplicates[clean_duplicates['genere'] == "nan"].sort_values(by='article', ascending=True), mwclient, checkgender, False)
+printCheckWiki(clean_duplicates[clean_duplicates['genere'] == "nan"].sort_values(by='article', ascending=True), mwclient, checkgender, False, False)
 
 # Print Gender studies
 countgenere = clean_duplicates[['item','genere']].groupby('genere')['item'].count().reset_index(name='count').sort_values(['count'], ascending=False)
@@ -377,5 +389,7 @@ print(countgenere)
 
 printCountGenere(countgenere, mwclient, countgenderpage, bios_count)
 
+groupgender = clean_duplicates.groupby(['item', 'article']).size().reset_index(name='count')
+printCheckWiki(groupgender[groupgender['count'] > 1 ].sort_values(by='article', ascending=True), mwclient, checkmultigender, False, False)
 
 conn.close()
