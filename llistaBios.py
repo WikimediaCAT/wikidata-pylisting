@@ -244,8 +244,8 @@ def printCountGenere(toprint, mwclient, checkpage, bios_count):
 				genere = row['genere']
 
 		list_generes.append(genere)
-		perc = row['count'] / bios_count
-		percstr = "%2.2f" % perc
+		perc = ( row['count'] / bios_count ) * 100
+		percstr = "%2.3f" % perc
 		text = text + "|-\n| [[" + str( genere ) + "]] || " + str( row['count'] ) + "||" + str(percstr) + "\n"
 
 	text = text + "|}"
@@ -255,6 +255,7 @@ def printCountGenere(toprint, mwclient, checkpage, bios_count):
 	text = text + "* {{#expr: {{NumBios}} + 0 }} biografies - [[" + targetpage + "|Seguiment]]\n"
 	text = text + "* {{#expr: {{FitaDones}} + 0 }} biografies de dones - [[" + targetpagedones + "|Seguiment]]\n"
 
+	text = text + "''NOTA: Algunes biografies poden tenir assignades més d'un genère.''\n"
 	text = text + "\n----\n"
 
 	list_count = map(lambda x: str(x), toprint['count'].tolist())
