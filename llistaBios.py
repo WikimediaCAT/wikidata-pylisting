@@ -225,7 +225,7 @@ def printCheckWiki( toprint, mwclient, checkpage, checkwd=True ):
 	return True
 
 
-def printCountGenere(toprint, mwclient, checkpage):
+def printCountGenere(toprint, mwclient, checkpage, bios_count):
 
 	list_generes = []
 	text = "{| class='wikitable sortable' \n!" + " !! ".join( ['gènere', 'recompte' ] ) + "\n"
@@ -244,7 +244,9 @@ def printCountGenere(toprint, mwclient, checkpage):
 				genere = row['genere']
 
 		list_generes.append(genere)
-		text = text + "|-\n| [[" + str( genere ) + "]] || " + str( row['count'] ) + "\n"
+		perc = row['count'] / bios_count
+		percstr = "%2.2f" % perc
+		text = text + "|-\n| [[" + str( genere ) + "]] || " + str( row['count'] ) + "||" + str(percstr) + "\n"
 
 	text = text + "|}"
 
@@ -345,9 +347,14 @@ current2 = pd.merge(c, stored2, how='left', on='article')
 toprint = current2.sort_values(by='cdate', ascending=False)
 toprint = toprint[(toprint['cdate'].notnull())]
 
+# Clean duplicates, keeping gender
 clean_duplicates = toprint.drop_duplicates(subset=['item', 'article', 'genere'], keep='last')
+# Clean diplicates, removing several genders
+clean_duplicates_full = toprint.drop_duplicates(subset=['item', 'article'], keep='last')
 
-printToWiki(clean_duplicates, mwclient, targetpage, milestonepage)
+bios_count = clean_duplicates_full.shape[0]
+
+printToWiki(clean_duplicates_full, mwclient, targetpage, milestonepage)
 
 dones = toprint[toprint['genere'] == "Q6581072"]
 printToWiki(dones, mwclient, targetpagedones, milestonepagedones)
@@ -367,7 +374,7 @@ printCheckWiki(clean_duplicates[clean_duplicates['genere'] == "nan"].sort_values
 countgenere = clean_duplicates[['item','genere']].groupby('genere')['item'].count().reset_index(name='count').sort_values(['count'], ascending=False)
 print(countgenere)
 
-printCountGenere(countgenere, mwclient, countgenderpage)
+printCountGenere(countgenere, mwclient, countgenderpage, bios_count)
 
 
 conn.close()
