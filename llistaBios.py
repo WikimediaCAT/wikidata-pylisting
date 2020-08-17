@@ -228,7 +228,7 @@ def printCheckWiki( toprint, mwclient, checkpage, checkwd=True ):
 def printCountGenere(toprint, mwclient, checkpage, bios_count):
 
 	list_generes = []
-	text = "{| class='wikitable sortable' \n!" + " !! ".join( ['gènere', 'recompte' ] ) + "\n"
+	text = "{| class='wikitable sortable' \n!" + " !! ".join( ['gènere', 'recompte', 'percentatge' ] ) + "\n"
 
 	for index, row in toprint.iterrows():
 
