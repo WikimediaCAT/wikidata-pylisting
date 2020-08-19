@@ -6,6 +6,7 @@ import pprint
 import MySQLdb
 import json
 import mwclient
+import time
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -50,26 +51,33 @@ if conn is None:
     exit()
 
 
-def getBackLinks( site, title, links, continue=None):
+def getBackLinks( site, title, links, cont=None):
 
-    # Example syntax: https://en.wikipedia.org/w/api.php?action=query&format=json&list=backlinks&bltitle=philosophy&blnamespace=0&bllimit=100&blcontinue=0|10374
-
-    if continue:
-        result = site.api('query', list='backlinks', bltitle=args.title, blnamespace=0, bllimit=100, blcontinue=continue)
+    # syntax: https://ca.wikipedia.org/w/api.php?action=query&format=json&list=embeddedin&eititle=Plantilla:Autoritat&eilimit=500&einamespace=0
+    if cont:
+        result = site.api('query', list='embeddedin', eititle=args.title, einamespace=0, eilimit=500, eicontinue=cont)
     else:
-        result = site.api('query', list='backlinks', bltitle=args.title, blnamespace=0, bllimit=100)
+        result = site.api('query', list='embeddedin', eititle=args.title, einamespace=0, eilimit=500)
 
-    for page in result['query']['backlinks'].values():
+    #pp.pprint(result['query']['embeddedin'])
+    for page in result['query']['embeddedin']:
         if 'title' in page:
-            links.append( page.title )
+            links.append(page["title"])
 
+    if 'continue' in result:
+        if 'eicontinue' in result['continue']:
+            cont = result['continue']['eicontinue']
+            links = getBackLinks(site, title, links, cont)
+
+    time.sleep(0.2)
     return links
 
-def addToDb( records, conn ):
+
+def addToDb(records, conn):
 
     c = conn.cursor()
 
-    c.executemany( "INSERT INTO `whatlinks` (`article`, `against`) VALUES ( %s, %s )", records )
+    c.executemany("INSERT INTO `whatlinks` (`article`, `against`) VALUES ( %s, %s )", records)
 
     conn.commit()
 
@@ -80,21 +88,21 @@ if "title" in args:
     if args.title is not None:
 
         cur = conn.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS `whatlinks` (  `article` VARCHAR(255), `against` VARCHAR(255), PRIMARY KEY (`article`, `against`) ) ;")
+        cur.execute("CREATE TABLE IF NOT EXISTS `whatlinks` (  `article` VARCHAR(255), `against` VARCHAR(255), PRIMARY KEY (`article`, `against`) ) default charset='utf8mb4' collate='utf8mb4_bin';")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_article ON whatlinks (`article`);")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_against ON whatlinks (`against`);")
 
-        cur.execute("DELETE from whatlinks where against = %s ;", args.title)
+        cur.execute("DELETE from `whatlinks` where `against` = \""+args.title+"\"")
 
         links = []
-        links = getBackLinks( site, args.title, links, None )
+        links = getBackLinks(site, args.title, links, None)
 
         records = []
         links = sorted(set(links))
 
-        for link in links :
+        for link in links:
             records.append([link, args.title])
 
-        addToDb( records, conn )
+        addToDb(records, conn)
 
         conn.commit()
