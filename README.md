@@ -39,6 +39,9 @@ Query:
 
       python autoritiesCheck.py -config /home/toniher/remote-work/mediawiki/allbios.json -authorities conf/autoritats.tsv -dump /scratch/wikidata/20200727/wikidata-20200727-all.json.gz
 
+# WhatLinks
+
+      python whatLinksHere.py -config ../allbios.json -title  Plantilla:Autoritat
 
 # TODO
 

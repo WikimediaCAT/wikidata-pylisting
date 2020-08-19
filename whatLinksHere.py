@@ -59,10 +59,11 @@ def getBackLinks( site, title, links, cont=None):
     else:
         result = site.api('query', list='embeddedin', eititle=args.title, einamespace=0, eilimit=500)
 
-    #pp.pprint(result['query']['embeddedin'])
+    # pp.pprint(result['query']['embeddedin'])
     for page in result['query']['embeddedin']:
         if 'title' in page:
-            links.append(page["title"])
+            title = page["title"].replace(" ", "_")
+            links.append(title)
 
     if 'continue' in result:
         if 'eicontinue' in result['continue']:
