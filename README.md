@@ -45,4 +45,5 @@ Query:
 
 # TODO
 
-* Unificar dones amb biografies generals i altres opcions
+      select i.article from (select d.article, d.id from ( select b.article from bios b left join (select * from whatlinks where against='Plantilla:Autoritat') as   w on b.article=w.article where w.against is null ) as l left join wikidata d on d.article=l.article ) as i left join authorities a on i.id=a.id where a.authority is null  order by article asc;
+
