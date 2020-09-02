@@ -312,6 +312,9 @@ c['genere'] = c['genere'].apply(lambda x: "unknown" if x.startswith( '_' ) else 
 
 c['item'] = c['item'].apply( lambda x: x.replace("http://www.wikidata.org/entity/", "") )
 
+# Double check outcome
+c.to_csv('/tmp/allbios.csv', index=False)
+
 # Get stored info
 stored = pd.read_sql_query("SELECT * from `bios`", conn)
 
