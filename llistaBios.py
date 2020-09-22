@@ -248,6 +248,8 @@ def printCountGenere(toprint, mwclient, checkpage, bios_count):
 
 		if row['genere'] == "unknown" :
 			genere = "desconegut"
+		elif row['genere'] == "nan" :
+			genere = "no assignat"
 		else :
 			genereA = checkWikiDataJSON(str(row['genere']), "label")
 			if len( genereA ) > 0 :
