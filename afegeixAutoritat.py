@@ -6,6 +6,7 @@ import json
 import mwclient
 import argparse
 import pprint
+import time
 
 # Import JSON configuration
 parser = argparse.ArgumentParser(description="""Script for adding Autoritat template via API""")
@@ -58,7 +59,7 @@ def process_content(content):
             new_content = new_content + plantilla
             done = done + 1
         if line.find("utoritat}}") >= 0 and done == 0:
-            new_content = new_content + plantilla
+            new_content = new_content
             done = done + 1
         new_content = new_content + line + "\n"
 
@@ -66,12 +67,16 @@ def process_content(content):
 
 with open(args.file) as fp:
 
-   for line in fp:
-       pageline = line.strip()
-       page = site.Pages[pageline]
+	for line in fp:
 
-       content = page.text()
-       new_content = process_content( content )
+		pageline = line.strip()
+		page = site.Pages[pageline]
 
-       if ( new_content ) and ( content != new_content ) :
-           update_wiki(site, pageline, new_content)
+		content = page.text()
+		new_content = process_content( content )
+
+		if ( new_content ) and ( content != new_content ) :
+		   update_wiki(site, pageline, new_content)
+
+		print( pageline )
+		time.sleep( 1 )
