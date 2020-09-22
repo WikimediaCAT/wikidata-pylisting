@@ -80,31 +80,32 @@ cur = conn.cursor()
 
 def checkWikiDataJSON( item, type="iw", lang="ca" ) :
 
-		url = "https://www.wikidata.org/wiki/Special:EntityData/" + item + ".json"
-
-		if type != "iw" :
-			print(url)
-
-		req = request.Request(url)
-
-		##parsing response
-		r = request.urlopen(req).read()
-		cont = json.loads(r.decode('utf-8'))
-
-		##parcing json
-		entitycont = cont['entities'][item]
-
 		output  = []
 
-		if type == "label" :
-			if 'labels' in entitycont :
-				if lang in entitycont['labels'] :
-					output.append( entitycont['labels'][lang]['value'] )
-		else :
-			if 'sitelinks' in entitycont :
-				output = list( entitycont['sitelinks'] )
+		if item :
+			url = "https://www.wikidata.org/wiki/Special:EntityData/" + item + ".json"
 
-		time.sleep( 0.2 )
+			if type != "iw" :
+				print(url)
+
+			req = request.Request(url)
+
+			##parsing response
+			r = request.urlopen(req).read()
+			cont = json.loads(r.decode('utf-8'))
+
+			##parcing json
+			entitycont = cont['entities'][item]
+
+			if type == "label" :
+				if 'labels' in entitycont :
+					if lang in entitycont['labels'] :
+						output.append( entitycont['labels'][lang]['value'] )
+			else :
+				if 'sitelinks' in entitycont :
+					output = list( entitycont['sitelinks'] )
+
+			time.sleep( 0.2 )
 		return output
 
 
