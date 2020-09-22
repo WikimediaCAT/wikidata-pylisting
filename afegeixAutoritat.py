@@ -61,6 +61,7 @@ def process_content(content):
         if line.find("utoritat}}") >= 0 and done == 0:
             new_content = new_content
             done = done + 1
+            return None
         new_content = new_content + line + "\n"
 
     return new_content
@@ -74,6 +75,9 @@ with open(args.file) as fp:
 
 		content = page.text()
 		new_content = process_content( content )
+		
+		if new_content is None :
+			continue
 
 		if ( new_content ) and ( content != new_content ) :
 		   update_wiki(site, pageline, new_content)
