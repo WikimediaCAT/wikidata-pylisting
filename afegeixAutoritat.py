@@ -55,8 +55,8 @@ def process_content(content):
         if line.find("[[Categor") >= 0 and done == 0:
             new_content = new_content + plantilla
             done = done + 1
-        if line.find("{{Ordena") >= 0 and done == 0:
-            new_content = new_content + plantilla
+        if line.find("{{ORDENA") >= 0 and done == 0:
+            new_content = new_content + plantilla + "\n"
             done = done + 1
         if line.find("utoritat}}") >= 0 and done == 0:
             new_content = new_content
@@ -75,7 +75,7 @@ with open(args.file) as fp:
 
 		content = page.text()
 		new_content = process_content( content )
-		
+
 		if new_content is None :
 			continue
 
