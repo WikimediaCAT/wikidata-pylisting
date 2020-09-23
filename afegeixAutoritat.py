@@ -53,7 +53,7 @@ def process_content(content):
     for line in lines:
 
         if line.find("[[Categor") >= 0 and done == 0:
-            new_content = new_content + plantilla
+            new_content = new_content + plantilla + "\n"
             done = done + 1
         if line.find("{{ORDENA") >= 0 and done == 0:
             new_content = new_content + plantilla + "\n"
