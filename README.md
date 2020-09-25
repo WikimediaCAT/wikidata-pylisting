@@ -48,6 +48,10 @@ Recupera pàgines amb plantilla autoritat:
       python whatLinksHere.py -config ../allbios.json -title  Plantilla:Autoritat
 
 
+## Addició de plantilla Autoritat
+
+      python afegeixAutoritat.py -config ../allbios.json -file llistatpagines.txt
+
 ## Consultes
 
 * Pàgines sense plantilla Autoritat amb entrades de Wikidata amb almenys 1 recurs d'autoritat
