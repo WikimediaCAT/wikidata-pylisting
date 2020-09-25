@@ -56,3 +56,8 @@ Recupera pàgines amb plantilla autoritat:
 
 * PER FER: Pàgines sense plantilla Autoritat amb entrades de Wikidata i sense recursos d'autoritat
 * PER FER: Pàgines sense plantilla Autoritat amb entrades de Wikidata amb només certs recursos i no d'altres (p. ex., VIAF i ORCID)
+
+      select a.id from authorities a where a.id not in ( select distinct( s.id ) from (
+      select distinct(id), group_concat(distinct(authority) order by authority asc) as groups from authorities group by id having groups = "P214,P496" 
+      UNION
+      select distinct(id), group_concat(distinct(authority)) as groups from authorities group by id having count(id) = 1 and groups in ("P214", "P496")  ) as s );
