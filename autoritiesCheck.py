@@ -72,7 +72,7 @@ if "dump" in args:
 
         cur = conn.cursor()
         cur.execute("DROP TABLE IF EXISTS `authorities`;")
-        cur.execute("CREATE TABLE IF NOT EXISTS `authorities` (  `id` VARCHAR(25), `authority` VARCHAR(25) ) ;")
+        cur.execute("CREATE TABLE IF NOT EXISTS `authorities` (  `id` VARCHAR(25), `authority` VARCHAR(25), PRIMARY KEY (`id`, `authority`) ) ;")
         cur.execute("CREATE INDEX idx_id ON authorities (id);")
         cur.execute("CREATE INDEX idx_authorities ON authorities (authority);")
 
@@ -90,6 +90,6 @@ if "dump" in args:
                             authp.append( prop )
                     # pp.pprint( authp )
                     if len( authp ) > 0:
-                        iter = addToDb( id, authp, conn, iter )
+                        iter = addToDb( id, list(set(authp)), conn, iter )
 
         conn.commit()
