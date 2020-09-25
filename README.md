@@ -37,6 +37,8 @@ Query:
 
 # Autoritats
 
+* Dumps de Wikidata a: https://dumps.wikimedia.org/wikidatawiki/entities/
+
       python autoritiesCheck.py -config /home/toniher/remote-work/mediawiki/allbios.json -authorities conf/autoritats.tsv -dump /scratch/wikidata/20200727/wikidata-20200727-all.json.gz
 
 ## WhatLinks
@@ -51,7 +53,6 @@ Recupera pàgines amb plantilla autoritat:
 * Pàgines sense plantilla Autoritat amb entrades de Wikidata amb almenys 1 recurs d'autoritat
 
       select distinct( i.article ) from (select d.article, d.id from ( select b.article from bios b left join (select * from whatlinks where against='Plantilla:Autoritat') as   w on b.article=w.article where w.against is null ) as l left join wikidata d on d.article=l.article ) as i left join authorities a on i.id=a.id where a.authority is not null  order by article asc;
-      
+
 * PER FER: Pàgines sense plantilla Autoritat amb entrades de Wikidata i sense recursos d'autoritat
 * PER FER: Pàgines sense plantilla Autoritat amb entrades de Wikidata amb només certs recursos i no d'altres (p. ex., VIAF i ORCID)
-
