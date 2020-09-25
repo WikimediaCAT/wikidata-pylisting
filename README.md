@@ -55,6 +55,8 @@ Recupera pàgines amb plantilla autoritat:
       select distinct( i.article ) from (select d.article, d.id from ( select b.article from bios b left join (select * from whatlinks where against='Plantilla:Autoritat') as   w on b.article=w.article where w.against is null ) as l left join wikidata d on d.article=l.article ) as i left join authorities a on i.id=a.id where a.authority is not null  order by article asc;
 
 * PER FER: Pàgines sense plantilla Autoritat amb entrades de Wikidata i sense recursos d'autoritat
+* PER FER: Pàgines amb plantilla Autoritat amb entrades de Wikidata i sense recursos d'autoritat
+
 * Pàgines sense plantilla Autoritat amb entrades de Wikidata amb només certs recursos i no d'altres (p. ex., VIAF i ORCID)
 
         select distinct( i.article ) from (select d.article, d.id from ( select b.article from bios b left join (select * from whatlinks where against='Plantilla:Autoritat') as   w on b.article=w.article where w.against is null ) as l left join wikidata d on d.article=l.article ) as i left join 
