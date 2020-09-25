@@ -61,3 +61,12 @@ Recupera pàgines amb plantilla autoritat:
       select distinct(id), group_concat(distinct(authority) order by authority asc) as groups from authorities group by id having groups = "P214,P496" 
       UNION
       select distinct(id), group_concat(distinct(authority)) as groups from authorities group by id having count(id) = 1 and groups in ("P214", "P496")  ) as s );
+
+## Estadístiques
+
+PER FER
+
+* Nombre total d'usos en pàgina d'autoritats per cada autoritat ( x Autoritat, y nombre de pàgines )
+* Nombre d'usos en pàgina d'autoritats per total d'usos per pàgina ( x nombre d'autoritats, y nombre de pàgines )
+* En pàgines utilitzades nombre d'usos totals d'autoritat respecte a altres autoritats ( x Autoritat, y mitja-desviació )
+etc.
