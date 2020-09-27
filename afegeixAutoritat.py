@@ -88,4 +88,4 @@ with open(args.file) as fp:
 		   update_wiki(site, pageline, new_content)
 
 		print( pageline )
-		time.sleep( 20 )
+		time.sleep( 30 )
