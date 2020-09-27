@@ -74,6 +74,11 @@ with open(args.file) as fp:
 		page = site.Pages[pageline]
 
 		content = page.text()
+
+		# If enpty content (new page) exit
+		if not content :
+			continue
+
 		new_content = process_content( content )
 
 		if new_content is None :
